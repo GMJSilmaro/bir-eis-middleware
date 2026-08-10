@@ -1,3 +1,10 @@
+overrides:
+  zod: ^4.4.3
 allowBuilds:
-  sharp: false
-  unrs-resolver: false
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+onlyBuiltDependencies:
+  - "@prisma/engines"
+  - esbuild
+  - prisma

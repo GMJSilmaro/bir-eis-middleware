@@ -2,8 +2,8 @@
 
 Multi-tenant SaaS middleware that maps ERP, manual, and API invoice data to BIR-compliant JSON, signs with JWS, and transmits and tracks submissions to the Bureau of Internal Revenue Electronic Invoicing System (EIS) / eSRS.
 
-**Current version:** `0.1.0`  
-**Status:** Greenfield scaffold / MVP in progress
+**Current version:** `0.3.3`  
+**Status:** Foundation MVP + portal settings, account profile/password, EIS credential vault, and audit logs
 
 ## Why this exists
 
@@ -29,7 +29,7 @@ Confirm exact coverage and timelines with your RDO and current BIR issuances.
 
 ## Middleware architecture
 
-Target flow (aspirational MVP—not yet shipped):
+Target flow (EIS engine still on the roadmap):
 
 ```mermaid
 flowchart LR
@@ -40,6 +40,19 @@ flowchart LR
   Queue --> EIS[BIR_EIS_eSRS]
   EIS --> Ack[Accept_Reject]
   Ack --> Audit[Audit_Reports]
+```
+
+Foundation flow (shipped in `0.2.0`):
+
+```mermaid
+flowchart TB
+  Browser --> Proxy[proxy.ts]
+  Proxy --> AuthPages[auth_login_register]
+  Proxy --> AppShell[app_dashboard]
+  AuthPages --> BetterAuth[Better_Auth_API]
+  AppShell --> RequireAuth[requireAuth]
+  BetterAuth --> Prisma[(PostgreSQL)]
+  RequireAuth --> Prisma
 ```
 
 ### Target layers
@@ -63,75 +76,92 @@ flowchart LR
 
 **Accuracy note:** EIS Certification and PTT are **taxpayer responsibilities**. This app is middleware that helps the taxpayer comply; it does not claim BIR accreditation of the vendor as an “EIS provider.”
 
-## Target file structure
-
-Planned layout under `src/` (not the current tree—today only a Next.js App Router scaffold exists):
+## File structure
 
 ```text
 src/
 ├── app/
 │   ├── (marketing)/     # Public landing
-│   ├── (provider)/      # Provider console (tenants, clients, settings, reports)
 │   ├── (auth)/          # Login, register
-│   ├── (app)/           # Tenant app (dashboard, outbound, inbound, settings, reports)
-│   └── api/v1/          # Public/internal API (ingest, submissions)
-├── components/          # Shared UI (ShadCN, data-table)
-├── config/              # Navigation, modules
-├── content/             # releases.ts, guides
+│   ├── (app)/           # Tenant app (dashboard, settings, audit-log, users, stubs)
+│   └── api/auth/        # Better Auth handler
+├── components/ui/       # ShadCN primitives
+├── config/              # Navigation
+├── content/             # releases.ts
 ├── features/
-│   └── eis/             # JSON build, JWS, transmit adapters, submission domain
-├── lib/                 # auth, database, crypto, notifications, storage
-└── proxy.ts             # Route protection
+│   ├── auth/            # Register action + schemas
+│   └── settings/        # Org + EIS credential forms/actions
+├── lib/                 # auth, audit, crypto, database, shared version helpers
+└── proxy.ts             # Deny-by-default route protection
 ```
 
-Route groups (planned): marketing `(marketing)`, tenant app `(app)`, provider `(provider)`, API under `app/api/v1/`.
+Provider console `(provider)/` and EIS `features/eis/` land in later slices.
 
 ## Stack
 
-**Planned:** Next.js App Router · ShadCN · Tailwind · React Hook Form · Zod · Zustand · Better Auth · Prisma 7 · PostgreSQL · Pino · Resend · Local filesystem storage · React PDF
+**Installed:** Next.js 16 · React 19 · Tailwind CSS 4 · TypeScript · ESLint · ShadCN (new-york/zinc) · Better Auth · Prisma 7 · PostgreSQL · Zod · bcryptjs
 
-**Installed today:** Next.js 16, React 19, Tailwind CSS 4, TypeScript, ESLint.
+**Planned later:** React Hook Form · Zustand · Pino · Resend · React PDF · EIS JSON/JWS transmit adapters
 
 ## What’s shipped vs roadmap
 
-### Shipped
+### Shipped (`0.2.0`–`0.3.1`)
 
 | Item | Notes |
 |------|--------|
-| Next.js 16 App Router scaffold | Basic `src/app` layout and landing page |
-| This README | Product brief + engineering entrypoint |
-| Postgres notes | [`database/postgres.example.md`](database/postgres.example.md) |
+| Multi-tenant auth | Better Auth email/password, tenant-scoped users, register organization |
+| RBAC foundation | Roles + permissions (`dashboard.view`, `settings.view` / `settings.manage`, `users.manage`, `audit.view`) |
+| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + AuditLog + Better Auth tables |
+| App shell | Marketing landing, login/register, authenticated dashboard + shadcn sidebar-07 shell |
+| Dashboard overview | Analytics-style home with KPIs, status mix, top customers, system status (`0.2.2`) |
+| Organization settings | Name, tagline, logo (`0.3.0`); two-pane Settings menu (`0.3.1`) |
+| EIS credential vault | TIN, Cert/Prod, PTT metadata, encrypted API key with last-4 mask (`0.3.0`) |
+| Audit logs | Tenant-scoped activity list for settings/credential changes (`0.3.0`) |
+| Users list | Sidebar entry + read-only team table (invite/role edit later) |
+| Releases | `src/content/releases.ts` aligned with `package.json` |
+| Docs / env | README, `.env.example` (includes `CREDENTIALS_ENCRYPTION_KEY`), Postgres notes |
 
-### Roadmap (MVP)
+### Roadmap (next slices)
 
 | Item | Notes |
 |------|--------|
-| Auth & multi-tenancy | Better Auth, tenant-scoped sessions, RBAC |
 | Invoice document model | Prisma + PostgreSQL |
 | JSON + JWS pipeline | Validate, map, sign (RS256) |
 | EIS transmit adapter | Cert/sandbox first, then production |
 | Submission status UI | Outbound inbox, accept/reject visibility |
-| Audit trail | Signed payloads + BIR responses |
-| Release notes | `src/content/releases.ts` wired to package version |
+| Invite users / role matrix | Admin UX for membership and permissions |
+| Provider console | Cross-tenant operator views |
 
 ## Setup
 
-What works on this scaffold today:
-
 1. Install: `pnpm install`
-2. Dev server: `pnpm run dev`
-3. Postgres: see [`database/postgres.example.md`](database/postgres.example.md) for connection and cutover notes when the database layer lands
+2. Copy env: `cp .env.example .env.local` and set secrets + Postgres URLs (include `CREDENTIALS_ENCRYPTION_KEY` for the credential vault)
+3. Generate client: `pnpm run db:generate`
+4. Migrate + seed (when Postgres is reachable):
+   ```bash
+   pnpm run db:migrate
+   pnpm run db:seed
+   ```
+5. Dev server: `pnpm run dev`
 
-Auth, Prisma migrate/seed scripts, and demo users are **not** available yet.
+Demo logins after seed: see [`database/seed-users.md`](database/seed-users.md) (password `DemoPass123`).
 
-### Scripts (available now)
+Postgres notes: [`database/postgres.example.md`](database/postgres.example.md). The agent does not start Docker Compose for you.
+
+### Scripts
 
 | Script | Description |
 |--------|-------------|
 | `pnpm run dev` | Development server |
+| `pnpm run lint` | ESLint |
+| `pnpm run typecheck` | TypeScript (`tsc --noEmit`) |
+| `pnpm run db:generate` | Prisma Client generate |
+| `pnpm run db:migrate` | Create/apply migrations (local) |
+| `pnpm run db:deploy` | Apply migrations (CI/prod) |
+| `pnpm run db:seed` | Seed demo tenant, roles, users |
+| `pnpm run db:studio` | Prisma Studio |
 | `pnpm run build` | Production build |
 | `pnpm run start` | Start production server |
-| `pnpm run lint` | ESLint |
 
 ## Official + reference links
 

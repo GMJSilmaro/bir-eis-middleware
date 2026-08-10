@@ -51,6 +51,12 @@ logs/
 .env.test.local
 .env.production.local
 
+# local data / uploads
+.data/
+
+# prisma (generated via db:generate / postinstall)
+/src/lib/database/generated/
+
 # cursor
 .cursor/
 .cursorrules
