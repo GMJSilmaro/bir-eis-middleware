@@ -3,7 +3,7 @@ import {
   DocumentStatusFilter,
   type StatusFilterOption,
 } from "@/features/documents/components/document-status-filter";
-import type { DocumentDirection } from "@/features/documents/lib/document-queries";
+import type { DocumentDirection } from "@/features/documents/lib/document-list-shared";
 import { tableCardClassName } from "@/components/ui/table";
 import { cn } from "@/utils/cn";
 

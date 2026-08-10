@@ -1,7 +1,11 @@
 import type { Prisma } from "@/lib/database/generated/prisma/client";
 import { prisma } from "@/lib/database/client";
+import {
+  DOCUMENT_PAGE_SIZE,
+  type DocumentDirection,
+} from "@/features/documents/lib/document-list-shared";
 
-export const DOCUMENT_PAGE_SIZE = 25;
+export { DOCUMENT_PAGE_SIZE, type DocumentDirection };
 
 /** Outbound submissions eligible for the EIS response inbox (Inbound). */
 export const RESPONSE_INBOX_STATUSES = [
@@ -10,8 +14,6 @@ export const RESPONSE_INBOX_STATUSES = [
   "accepted",
   "rejected",
 ] as const;
-
-export type DocumentDirection = "outbound" | "inbound";
 
 export interface ListDocumentsParams {
   tenantId: string;
@@ -75,7 +77,7 @@ export async function listDocuments(params: ListDocumentsParams) {
   const skip = (page - 1) * DOCUMENT_PAGE_SIZE;
   const where = buildListWhere(params);
 
-  const [total, documents] = await Promise.all([
+  const [total, rows] = await Promise.all([
     prisma.invoiceDocument.count({ where }),
     prisma.invoiceDocument.findMany({
       where,
@@ -98,6 +100,22 @@ export async function listDocuments(params: ListDocumentsParams) {
       },
     }),
   ]);
+
+  // Plain JSON for Client Components (Prisma Decimal/Date are not RSC-serializable).
+  const documents = rows.map((doc) => ({
+    id: doc.id,
+    direction: doc.direction,
+    documentType: doc.documentType,
+    status: doc.status,
+    documentNumber: doc.documentNumber,
+    issueDate: doc.issueDate.toISOString(),
+    currency: doc.currency,
+    counterpartName: doc.counterpartName,
+    counterpartTin: doc.counterpartTin,
+    totalAmount: doc.totalAmount.toString(),
+    eisAckStatus: doc.eisAckStatus,
+    createdAt: doc.createdAt.toISOString(),
+  }));
 
   const totalPages = Math.max(1, Math.ceil(total / DOCUMENT_PAGE_SIZE));
   const safePage = Math.min(page, totalPages);

@@ -79,6 +79,13 @@ export default async function OutboundDocumentDetailPage({
                 Back to list
               </Link>
             </Button>
+            {canQueue ? (
+              <QueueOutboundButton
+                documentId={document.id}
+                documentType={document.documentType}
+                variant="onNavy"
+              />
+            ) : null}
           </div>
         }
       />
@@ -160,7 +167,7 @@ export default async function OutboundDocumentDetailPage({
           {isDraft && canManage ? (
             <DocumentContentCard
               title="Edit draft"
-              description="Update details before queueing for transmission to BIR EIS."
+              description="Update details before submitting to BIR EIS."
             >
               <OutboundDocumentForm
                 mode="edit"
@@ -197,15 +204,6 @@ export default async function OutboundDocumentDetailPage({
               </dl>
             </DocumentContentCard>
           )}
-
-          {canQueue ? (
-            <DocumentContentCard
-              title="Queue"
-              description="Mark this draft as ready for transmission. Live EIS send comes in a later release. Use Inbound → Sync from EIS to refresh sandbox responses."
-            >
-              <QueueOutboundButton documentId={document.id} />
-            </DocumentContentCard>
-          ) : null}
         </div>
       </div>
     </div>

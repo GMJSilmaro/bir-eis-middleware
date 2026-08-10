@@ -126,7 +126,7 @@ export default async function OutboundPage({
         }
         emptyDescription={
           canManage
-            ? "Create a draft sales invoice or receipt, queue it for transmission, then check Inbound for EIS responses."
+            ? "Create a draft sales invoice or receipt, submit it to EIS, then check Inbound for EIS responses."
             : "When your team prepares outbound invoices, they will appear here."
         }
       />

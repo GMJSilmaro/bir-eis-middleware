@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { DocumentDirection } from "@/features/documents/lib/document-queries";
+import type { DocumentDirection } from "@/features/documents/lib/document-list-shared";
 import { cn } from "@/utils/cn";
 
 export interface StatusFilterOption {

@@ -10,10 +10,11 @@ export function formatDocumentType(documentType: string): string {
   );
 }
 
-export function formatIssueDate(date: Date): string {
+export function formatIssueDate(date: Date | string): string {
+  const value = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("en-PH", {
     dateStyle: "medium",
-  }).format(date);
+  }).format(value);
 }
 
 export function formatMoney(

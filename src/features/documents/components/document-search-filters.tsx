@@ -2,7 +2,7 @@ import {
   DOCUMENT_TYPES,
   DOCUMENT_TYPE_LABELS,
 } from "@/features/documents/schemas/document.schema";
-import type { DocumentDirection } from "@/features/documents/lib/document-queries";
+import type { DocumentDirection } from "@/features/documents/lib/document-list-shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { settingsFieldClassName } from "@/features/settings/lib/field-styles";

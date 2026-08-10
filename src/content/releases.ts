@@ -46,6 +46,61 @@ export interface ReleaseNote {
 
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "0.6.1",
+    date: "2026-08-10",
+    releasedAt: "2026-08-10T21:50:00+08:00",
+    title: "Clearer import results and document list selection",
+    highlights: [
+      "Outbound and Inbound lists now show a checkbox and row number so you can select documents on the current page",
+      "Excel import only shows a green success toast when drafts were actually created",
+      "After Import drafts, the import dialog closes and the file picker clears so you start fresh next time",
+      "ERP Sync now shows the same toast feedback as Excel import and closes the dialog when sync finishes",
+    ],
+    changes: [
+      {
+        type: "improvement",
+        description:
+          "Outbound and Inbound document lists include checkboxes and row numbers (with page-aware numbering) for selecting items on the current page",
+      },
+      {
+        type: "improvement",
+        description:
+          "Import from Excel closes the dialog and clears the selected CSV after Import drafts finishes so you start fresh next time",
+      },
+      {
+        type: "improvement",
+        description:
+          "ERP Sync shows toast notifications for success, duplicates skipped, and errors, and closes the New document dialog when sync finishes—same pattern as Excel import",
+      },
+      {
+        type: "improvement",
+        description:
+          "ERP Sync in New document keeps Sync now and Manage connections pinned at the bottom so long sync notes can scroll above",
+      },
+      {
+        type: "fix",
+        description:
+          "Excel import toasts stay green only when drafts are created; duplicate-only or zero-created results show as a warning instead of a success",
+      },
+      {
+        type: "fix",
+        description:
+          "ERP Sync result banners and toasts stay green only when drafts are created; duplicate-only or zero-created results show as a warning instead",
+      },
+      {
+        type: "fix",
+        description:
+          "Removed the confusing Done link from ERP Sync in the New document dialog; closing happens automatically after sync, like Excel import",
+      },
+      {
+        type: "fix",
+        description:
+          "Outbound and Inbound document lists load reliably again when amounts are shown (no blank or broken page after opening the inbox)",
+      },
+    ],
+  },
+
+  {
     version: "0.6.0",
     date: "2026-08-10",
     releasedAt: "2026-08-10T21:00:00+08:00",
@@ -70,6 +125,16 @@ export const RELEASES: ReleaseNote[] = [
         type: "improvement",
         description:
           "Landing navigation anchors make it easy to move between Mandate, Steps, Requirements, and Help while staying on the same page",
+      },
+      {
+        type: "improvement",
+        description:
+          "Outbound drafts now say Submit to EIS and ask you to confirm before the document is marked ready for transmission",
+      },
+      {
+        type: "improvement",
+        description:
+          "Excel import keeps Import drafts pinned at the bottom, with quick toasts for import results",
       },
     ],
   },

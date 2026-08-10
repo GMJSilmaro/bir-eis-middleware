@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/utils/cn";
 
 const tableCardClassName =
-  "overflow-hidden rounded-2xl border-transparent bg-card shadow-[0_6px_22px_rgba(15,23,42,0.07)]";
+  "overflow-x-auto rounded-2xl border-transparent bg-card shadow-[0_6px_22px_rgba(15,23,42,0.07)]";
 
 const Table = React.forwardRef<
   HTMLTableElement,

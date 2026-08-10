@@ -2,7 +2,7 @@
 
 Multi-tenant SaaS middleware that maps ERP, manual, and API invoice data to BIR-compliant JSON, signs with JWS, and transmits and tracks submissions to the Bureau of Internal Revenue Electronic Invoicing System (EIS) / eSRS.
 
-**Current version:** `0.6.0`  
+**Current version:** `0.6.1`  
 **Status:** Foundation MVP + document inbox, ERP/Excel ingest (sandbox sync + CSV import), portal settings, account profile/password, EIS credential vault, audit logs, and public mandate / help education on the landing page
 
 ## Why this exists
@@ -106,7 +106,7 @@ Provider console `(provider)/` and EIS transmit `features/eis/` land in later sl
 
 ## What’s shipped vs roadmap
 
-### Shipped (`0.2.0`–`0.6.0`)
+### Shipped (`0.2.0`–`0.6.1`)
 
 | Item | Notes |
 |------|--------|

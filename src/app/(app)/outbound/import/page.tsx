@@ -32,7 +32,7 @@ export default async function OutboundImportPage() {
 
       <DocumentContentCard
         title="CSV import"
-        description="Use the exact column headers from the template. Invalid or duplicate document numbers are reported per row."
+        description="Use the exact column headers from the template. Success and duplicate skips show as toasts; other row issues appear below."
       >
         <ExcelImportPanel />
       </DocumentContentCard>

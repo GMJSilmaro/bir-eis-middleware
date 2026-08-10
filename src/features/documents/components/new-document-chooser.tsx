@@ -151,8 +151,11 @@ export function NewDocumentChooser({
         </DialogTrigger>
         <DialogContent
           className={cn(
-            "max-h-[min(90vh,40rem)] gap-5 overflow-y-auto bg-card",
-            isChoose ? "sm:max-w-2xl" : "sm:max-w-lg",
+            "max-h-[min(90vh,40rem)] bg-card",
+            isChoose ? "gap-5 overflow-y-auto sm:max-w-2xl" : null,
+            step === "erp" || step === "excel"
+              ? "flex min-h-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+              : null,
           )}
         >
           {isChoose ? (
@@ -225,33 +228,42 @@ export function NewDocumentChooser({
           ) : null}
 
           {step === "erp" ? (
-            <div className="space-y-4">
-              <BackToChooserButton onClick={() => setStep("choose")} />
-              <DialogHeader className="space-y-1.5">
-                <DialogTitle>ERP Sync</DialogTitle>
-                <DialogDescription>
-                  Pull sample invoices into Outbound drafts using a saved
-                  connection.
-                </DialogDescription>
-              </DialogHeader>
-              <ErpSyncPanel
-                connections={erpConnections}
-                onDone={closeChooser}
-              />
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="shrink-0 space-y-3 px-6 pt-6">
+                <BackToChooserButton onClick={() => setStep("choose")} />
+                <DialogHeader className="space-y-1.5">
+                  <DialogTitle>ERP Sync</DialogTitle>
+                  <DialogDescription>
+                    Pull sample invoices into Outbound drafts using a saved
+                    connection.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+              <div className="mt-4 flex min-h-0 flex-1 flex-col">
+                <ErpSyncPanel
+                  connections={erpConnections}
+                  onDone={closeChooser}
+                  variant="dialog"
+                />
+              </div>
             </div>
           ) : null}
 
           {step === "excel" ? (
-            <div className="space-y-4">
-              <BackToChooserButton onClick={() => setStep("choose")} />
-              <DialogHeader className="space-y-1.5">
-                <DialogTitle>Import from Excel</DialogTitle>
-                <DialogDescription>
-                  Download the CSV template, fill your rows, and create outbound
-                  drafts in bulk.
-                </DialogDescription>
-              </DialogHeader>
-              <ExcelImportPanel onDone={closeChooser} />
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="shrink-0 space-y-3 px-6 pt-6">
+                <BackToChooserButton onClick={() => setStep("choose")} />
+                <DialogHeader className="space-y-1.5">
+                  <DialogTitle>Import from Excel</DialogTitle>
+                  <DialogDescription>
+                    Download the CSV template, fill your rows, and create
+                    outbound drafts in bulk.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+              <div className="mt-4 flex min-h-0 flex-1 flex-col">
+                <ExcelImportPanel variant="dialog" onDone={closeChooser} />
+              </div>
             </div>
           ) : null}
         </DialogContent>
