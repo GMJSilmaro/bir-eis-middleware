@@ -5,6 +5,12 @@ import { BirEisSystemStatus } from "@/app/(app)/dashboard/_components/bir-eis-sy
 import { DashboardKpiCards } from "@/app/(app)/dashboard/_components/dashboard-kpi-cards";
 import { StatusDistributionCard } from "@/app/(app)/dashboard/_components/status-distribution-card";
 import { TopCustomersCard } from "@/app/(app)/dashboard/_components/top-customers-card";
+import type { DemoTopCustomer } from "@/app/(app)/dashboard/_data/demo-invoices";
+import {
+  counterpartInitials,
+  formatMoney,
+} from "@/features/documents/lib/document-format";
+import { getDocumentDashboardStats } from "@/features/documents/lib/document-queries";
 import { requireAuth } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/database/client";
 
@@ -12,12 +18,65 @@ export const metadata = {
   title: "Dashboard · BIR EIS",
 };
 
+function buildStatusDistribution(
+  statusGroups: { status: string; _count: { _all: number } }[],
+) {
+  const counts = {
+    accepted: 0,
+    rejected: 0,
+    pending: 0,
+  };
+
+  for (const group of statusGroups) {
+    const n = group._count._all;
+    if (group.status === "accepted") counts.accepted += n;
+    else if (group.status === "rejected") counts.rejected += n;
+    else counts.pending += n;
+  }
+
+  const total = counts.accepted + counts.rejected + counts.pending;
+  if (total === 0) return null;
+
+  const accepted = Math.round((counts.accepted / total) * 100);
+  const rejected = Math.round((counts.rejected / total) * 100);
+  const pending = Math.max(0, 100 - accepted - rejected);
+
+  return { accepted, rejected, pending };
+}
+
+function buildTopCustomers(
+  counterparts: {
+    counterpartName: string;
+    _count: { _all: number };
+    _sum: { totalAmount: { toString(): string } | null };
+  }[],
+): DemoTopCustomer[] {
+  return counterparts.map((row) => {
+    const amountValue = row._sum.totalAmount
+      ? Number(row._sum.totalAmount.toString())
+      : 0;
+    return {
+      name: row.counterpartName,
+      initials: counterpartInitials(row.counterpartName),
+      invoiceCount: row._count._all,
+      amount: formatMoney(amountValue, "PHP"),
+    };
+  });
+}
+
 export default async function DashboardPage() {
   const session = await requireAuth();
+  const tenantId = session.user.tenantId;
 
-  const userCount = await prisma.user.count({
-    where: { tenantId: session.user.tenantId, deletedAt: null },
-  });
+  const [userCount, stats] = await Promise.all([
+    prisma.user.count({
+      where: { tenantId, deletedAt: null },
+    }),
+    getDocumentDashboardStats(tenantId),
+  ]);
+
+  const statusDistribution = buildStatusDistribution(stats.statusGroups);
+  const topCustomers = buildTopCustomers(stats.counterparts);
 
   return (
     <div className="space-y-6 lg:space-y-7">
@@ -27,10 +86,16 @@ export default async function DashboardPage() {
         description="Monitor your e-invoice activities and manage your transactions efficiently."
         showLiveClock
       />
-      <DashboardKpiCards />
+      <DashboardKpiCards
+        values={{
+          outbound: stats.outboundCount,
+          inbound: stats.inboundCount,
+          companies: 1,
+        }}
+      />
       <div className="grid gap-5 xl:grid-cols-3">
-        <StatusDistributionCard />
-        <TopCustomersCard />
+        <StatusDistributionCard values={statusDistribution} />
+        <TopCustomersCard customers={topCustomers} />
         <BirEisSystemStatus registeredUsers={userCount} />
       </div>
     </div>

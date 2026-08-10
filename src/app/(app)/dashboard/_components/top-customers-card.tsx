@@ -1,10 +1,21 @@
 import { Users } from "lucide-react";
 
 import { DashboardNavySurface } from "@/app/(app)/dashboard/_components/dashboard-navy-surface";
-import { DEMO_TOP_CUSTOMERS } from "@/app/(app)/dashboard/_data/demo-invoices";
+import {
+  DEMO_TOP_CUSTOMERS,
+  type DemoTopCustomer,
+} from "@/app/(app)/dashboard/_data/demo-invoices";
 import { Card, CardContent } from "@/components/ui/card";
 
-export function TopCustomersCard() {
+export function TopCustomersCard({
+  customers,
+}: {
+  customers?: DemoTopCustomer[] | null;
+}) {
+  const rows =
+    customers && customers.length > 0 ? customers : DEMO_TOP_CUSTOMERS;
+  const isLive = Boolean(customers && customers.length > 0);
+
   return (
     <Card className="overflow-hidden border-transparent shadow-[0_6px_24px_rgba(15,23,42,0.07)]">
       <DashboardNavySurface className="px-5 py-4">
@@ -14,13 +25,15 @@ export function TopCustomersCard() {
             <h2 className="text-base font-semibold tracking-tight">
               Top Customers
             </h2>
-            <p className="text-xs text-sidebar-muted">Most active clients.</p>
+            <p className="text-xs text-sidebar-muted">
+              {isLive ? "Most active counterparts." : "Most active clients."}
+            </p>
           </div>
         </div>
       </DashboardNavySurface>
       <CardContent className="px-5 py-4">
         <ul className="divide-y divide-border/60">
-          {DEMO_TOP_CUSTOMERS.map((customer) => (
+          {rows.map((customer) => (
             <li
               key={customer.name}
               className="flex items-center gap-3 py-3.5 first:pt-2 last:pb-2"

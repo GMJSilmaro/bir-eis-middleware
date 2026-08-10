@@ -2,8 +2,8 @@
 
 Multi-tenant SaaS middleware that maps ERP, manual, and API invoice data to BIR-compliant JSON, signs with JWS, and transmits and tracks submissions to the Bureau of Internal Revenue Electronic Invoicing System (EIS) / eSRS.
 
-**Current version:** `0.3.3`  
-**Status:** Foundation MVP + portal settings, account profile/password, EIS credential vault, and audit logs
+**Current version:** `0.4.3`  
+**Status:** Foundation MVP + document inbox (outbound submit queue + inbound EIS responses), portal settings, account profile/password, EIS credential vault, and audit logs
 
 ## Why this exists
 
@@ -83,19 +83,20 @@ src/
 ├── app/
 │   ├── (marketing)/     # Public landing
 │   ├── (auth)/          # Login, register
-│   ├── (app)/           # Tenant app (dashboard, settings, audit-log, users, stubs)
+│   ├── (app)/           # Tenant app (dashboard, outbound, inbound, settings, audit-log, users)
 │   └── api/auth/        # Better Auth handler
 ├── components/ui/       # ShadCN primitives
 ├── config/              # Navigation
 ├── content/             # releases.ts
 ├── features/
 │   ├── auth/            # Register action + schemas
+│   ├── documents/       # Outbound/inbound inbox schemas, actions, UI
 │   └── settings/        # Org + EIS credential forms/actions
 ├── lib/                 # auth, audit, crypto, database, shared version helpers
 └── proxy.ts             # Deny-by-default route protection
 ```
 
-Provider console `(provider)/` and EIS `features/eis/` land in later slices.
+Provider console `(provider)/` and EIS transmit `features/eis/` land in later slices.
 
 ## Stack
 
@@ -105,18 +106,20 @@ Provider console `(provider)/` and EIS `features/eis/` land in later slices.
 
 ## What’s shipped vs roadmap
 
-### Shipped (`0.2.0`–`0.3.1`)
+### Shipped (`0.2.0`–`0.4.2`)
 
 | Item | Notes |
 |------|--------|
 | Multi-tenant auth | Better Auth email/password, tenant-scoped users, register organization |
-| RBAC foundation | Roles + permissions (`dashboard.view`, `settings.view` / `settings.manage`, `users.manage`, `audit.view`) |
-| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + AuditLog + Better Auth tables |
+| RBAC foundation | Roles + permissions (`dashboard.view`, `settings.*`, `users.manage`, `audit.view`, `documents.view` / `documents.manage`) |
+| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + AuditLog + InvoiceDocument + Better Auth tables |
 | App shell | Marketing landing, login/register, authenticated dashboard + shadcn sidebar-07 shell |
-| Dashboard overview | Analytics-style home with KPIs, status mix, top customers, system status (`0.2.2`) |
+| Dashboard overview | Live outbound / EIS-response KPIs and status mix from documents when present (`0.4.0`+) |
+| Outbound inbox | Prepare and queue invoices for BIR/EIS submission; read-only EIS response on detail (`0.4.0`+) |
+| Inbound inbox | EIS response inbox for those submissions; **Sync from EIS** sandbox refresh (`0.4.1`) |
 | Organization settings | Name, tagline, logo (`0.3.0`); two-pane Settings menu (`0.3.1`) |
 | EIS credential vault | TIN, Cert/Prod, PTT metadata, encrypted API key with last-4 mask (`0.3.0`) |
-| Audit logs | Tenant-scoped activity list for settings/credential changes (`0.3.0`) |
+| Audit logs | Tenant-scoped activity list including document events (`0.3.0`+) |
 | Users list | Sidebar entry + read-only team table (invite/role edit later) |
 | Releases | `src/content/releases.ts` aligned with `package.json` |
 | Docs / env | README, `.env.example` (includes `CREDENTIALS_ENCRYPTION_KEY`), Postgres notes |
@@ -125,10 +128,8 @@ Provider console `(provider)/` and EIS `features/eis/` land in later slices.
 
 | Item | Notes |
 |------|--------|
-| Invoice document model | Prisma + PostgreSQL |
 | JSON + JWS pipeline | Validate, map, sign (RS256) |
-| EIS transmit adapter | Cert/sandbox first, then production |
-| Submission status UI | Outbound inbox, accept/reject visibility |
+| EIS transmit adapter | Cert/sandbox first, then production (live HTTP send) |
 | Invite users / role matrix | Admin UX for membership and permissions |
 | Provider console | Cross-tenant operator views |
 
@@ -158,7 +159,7 @@ Postgres notes: [`database/postgres.example.md`](database/postgres.example.md). 
 | `pnpm run db:generate` | Prisma Client generate |
 | `pnpm run db:migrate` | Create/apply migrations (local) |
 | `pnpm run db:deploy` | Apply migrations (CI/prod) |
-| `pnpm run db:seed` | Seed demo tenant, roles, users |
+| `pnpm run db:seed` | Seed demo tenant, roles, users, sample documents |
 | `pnpm run db:studio` | Prisma Studio |
 | `pnpm run build` | Production build |
 | `pnpm run start` | Start production server |

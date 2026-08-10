@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Sidebar footer promo card ("BIR/EIS Compliance Ready").
+ * Currently unused in the app shell — kept for future reuse.
+ * Re-enable via `app-sidebar.tsx` (import + SidebarFooter).
+ */
+
 import { Landmark } from "lucide-react";
 
 export function IntegratedPortalCard() {

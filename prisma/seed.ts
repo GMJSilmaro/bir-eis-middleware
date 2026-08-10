@@ -11,7 +11,7 @@ async function main() {
   await seedCore(prisma);
 
   console.log(
-    `Seed [${profile}] done in ${Date.now() - started}ms — demo tenant, roles, permissions, users. See database/seed-users.md`,
+    `Seed [${profile}] done in ${Date.now() - started}ms — demo tenant, roles, permissions, users, sample documents. See database/seed-users.md`,
   );
 }
 

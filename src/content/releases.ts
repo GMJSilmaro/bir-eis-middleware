@@ -46,6 +46,146 @@ export interface ReleaseNote {
 
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "0.4.3",
+    date: "2026-08-10",
+    releasedAt: "2026-08-10T19:40:00+08:00",
+    title: "Choose how to create outbound documents",
+    highlights: [
+      "New document opens a chooser for Manual, ERP Sync, or Excel",
+      "Manual is marked Available now so it is clear which option you can use today",
+      "Coming soon options look distinct while more create methods stay on the roadmap",
+      "Create outbound document popup stays centered and fully visible on screen",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "On Outbound, New document opens a popup so you can pick Manual entry, ERP Sync, or Excel File",
+      },
+      {
+        type: "improvement",
+        description:
+          "Chooser cards feel fuller and more polished, with Manual marked Available now and a gentle lift on hover",
+      },
+      {
+        type: "improvement",
+        description:
+          "ERP Sync and Excel File stay marked Coming soon so it is obvious they are not ready yet",
+      },
+      {
+        type: "fix",
+        description:
+          "The create outbound document popup is centered on screen again and scrolls if needed so it is not cut off",
+      },
+    ],
+  },
+  {
+    version: "0.4.2",
+    date: "2026-08-10",
+    releasedAt: "2026-08-10T18:55:00+08:00",
+    title: "Clearer lists, filters, and header actions",
+
+    highlights: [
+      "Search and status filters sit together in one solid card",
+      "Primary actions use a consistent pill-shaped button",
+      "Header Back and Open actions stay readable on the navy banner",
+    ],
+    changes: [
+      {
+        type: "improvement",
+        description:
+          "Outbound and Inbound filters—search, document type, and status—appear in a single solid card instead of split rows",
+      },
+      {
+        type: "improvement",
+        description:
+          "New document, Sync from EIS, and other primary actions share the same pill-shaped style",
+      },
+      {
+        type: "improvement",
+        description:
+          "Document and audit lists use the same table layout with clearer paging controls",
+      },
+      {
+        type: "fix",
+        description:
+          "Buttons on the navy page header stay readable when you hover or tap them",
+      },
+    ],
+  },
+  {
+    version: "0.4.1",
+    date: "2026-08-10",
+    releasedAt: "2026-08-10T18:45:00+08:00",
+    title: "EIS response inbox and clearer document lists",
+    highlights: [
+      "Inbound now shows BIR EIS replies for your outbound submissions",
+      "Sync from EIS refreshes pending sandbox responses in one click",
+      "Document tables add View details, search, type filters, and always-on paging",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Inbound is the EIS response inbox for queued and submitted outbound documents, with Sync from EIS for sandbox refresh",
+      },
+      {
+        type: "improvement",
+        description:
+          "Outbound and Inbound lists include View details actions, search by number or counterpart, document type filters, and clearer pagination",
+      },
+      {
+        type: "improvement",
+        description:
+          "Labels say EIS response instead of acknowledgement jargon, and primary actions sit on the right",
+      },
+      {
+        type: "fix",
+        description:
+          "Dashboard inbound total counts received EIS accept or reject replies, not buyer purchase documents",
+      },
+    ],
+  },
+  {
+    version: "0.4.0",
+    date: "2026-08-10",
+    releasedAt: "2026-08-10T18:30:00+08:00",
+    title: "Outbound and inbound document inbox",
+    highlights: [
+      "Prepare outbound invoices and receipts, then queue them before transmit",
+      "Record inbound buyer documents and mark them as reviewed",
+      "Track accept or reject acknowledgements on outbound documents",
+      "Dashboard totals now reflect your real outbound and inbound counts",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Outbound inbox lets you create draft sales documents, edit them, and queue them for later transmission",
+      },
+      {
+        type: "feature",
+        description:
+          "Inbound inbox lets you record buyer documents and mark received items as reviewed",
+      },
+      {
+        type: "feature",
+        description:
+          "Outbound documents can store simulated EIS accept or reject acknowledgements with a reference and message",
+      },
+      {
+        type: "improvement",
+        description:
+          "Dashboard outbound and inbound totals, status mix, and top counterparts use your live document data when available",
+      },
+      {
+        type: "improvement",
+        description:
+          "Outbound and Inbound appear in the sidebar for people who can view documents",
+      },
+    ],
+  },
+  {
     version: "0.3.3",
     date: "2026-08-10",
     releasedAt: "2026-08-10T18:10:00+08:00",

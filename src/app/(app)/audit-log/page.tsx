@@ -1,10 +1,19 @@
-import Link from "next/link";
 import { History } from "lucide-react";
 
 import { PageHeaderCard } from "@/app/(app)/_components/page-header-card";
-import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/ui/table-pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  tableCardClassName,
+} from "@/components/ui/table";
 import { requirePermission } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/database/client";
+import { cn } from "@/utils/cn";
 
 export const metadata = {
   title: "Audit Logs · BIR EIS",
@@ -42,6 +51,21 @@ function summarizeMetadata(metadata: unknown): string {
   }
   if (record.taglineChanged === true) parts.push("Tagline updated");
   if (record.logoChanged === true) parts.push("Logo updated");
+  if (typeof record.direction === "string") {
+    parts.push(`Direction: ${record.direction}`);
+  }
+  if (typeof record.documentNumber === "string") {
+    parts.push(`Doc: ${record.documentNumber}`);
+  }
+  if (typeof record.status === "string") {
+    parts.push(`Status: ${record.status}`);
+  }
+  if (typeof record.eisAckStatus === "string") {
+    parts.push(`EIS response: ${record.eisAckStatus}`);
+  }
+  if (typeof record.syncedCount === "number") {
+    parts.push(`Synced: ${record.syncedCount}`);
+  }
 
   return parts.length > 0 ? parts.join(" · ") : "—";
 }
@@ -80,6 +104,8 @@ export default async function AuditLogPage({
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
+  const rangeStart = total === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(safePage * PAGE_SIZE, total);
 
   return (
     <div className="space-y-6 lg:space-y-7">
@@ -90,7 +116,7 @@ export default async function AuditLogPage({
       />
 
       {total === 0 ? (
-        <div className="rounded-2xl border-transparent bg-card px-6 py-14 text-center shadow-[0_6px_22px_rgba(15,23,42,0.07)]">
+        <div className={cn(tableCardClassName, "px-6 py-14 text-center")}>
           <p className="text-base font-medium text-foreground">
             No activity yet
           </p>
@@ -101,68 +127,62 @@ export default async function AuditLogPage({
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="overflow-hidden rounded-2xl border-transparent bg-card shadow-[0_6px_22px_rgba(15,23,42,0.07)]">
-            <table className="w-full text-sm">
-              <thead className="border-b border-border/60 bg-muted/40 text-left text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Time</th>
-                  <th className="px-4 py-3 font-medium">Actor</th>
-                  <th className="px-4 py-3 font-medium">Action</th>
-                  <th className="px-4 py-3 font-medium">Entity</th>
-                  <th className="px-4 py-3 font-medium">Summary</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map((log) => (
-                  <tr
-                    key={log.id}
-                    className="border-b border-border/50 last:border-0"
-                  >
-                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                      {formatAuditTime(log.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {log.user?.name || log.user?.email || "System"}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs">{log.action}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {log.entityType}
-                      {log.entityId ? (
-                        <span className="ml-1 font-mono text-[11px] opacity-70">
-                          · {log.entityId.slice(0, 8)}
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="max-w-xs truncate px-4 py-3 text-muted-foreground">
-                      {summarizeMetadata(log.metadata)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Time</TableHead>
+                <TableHead>Actor</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Entity</TableHead>
+                <TableHead>Summary</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {formatAuditTime(log.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    {log.user?.name || log.user?.email || "System"}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {log.action}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {log.entityType}
+                    {log.entityId ? (
+                      <span className="ml-1 font-mono text-[11px] opacity-70">
+                        · {log.entityId.slice(0, 8)}
+                      </span>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate text-muted-foreground">
+                    {summarizeMetadata(log.metadata)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-          {totalPages > 1 ? (
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                Page {safePage} of {totalPages} · {total} events
-              </p>
-              <div className="flex gap-2">
-                {safePage > 1 ? (
-                  <Button asChild variant="outline" size="sm" className="rounded-lg">
-                    <Link href={`/audit-log?page=${safePage - 1}`}>Previous</Link>
-                  </Button>
-                ) : null}
-                {safePage < totalPages ? (
-                  <Button asChild variant="outline" size="sm" className="rounded-lg">
-                    <Link href={`/audit-log?page=${safePage + 1}`}>Next</Link>
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">{total} events</p>
-          )}
+          <TablePagination
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            total={total}
+            summary={
+              totalPages > 1
+                ? `Page ${safePage} of ${totalPages} · ${total} events`
+                : `${total} events`
+            }
+            prevHref={
+              safePage > 1 ? `/audit-log?page=${safePage - 1}` : undefined
+            }
+            nextHref={
+              safePage < totalPages
+                ? `/audit-log?page=${safePage + 1}`
+                : undefined
+            }
+          />
         </div>
       )}
     </div>

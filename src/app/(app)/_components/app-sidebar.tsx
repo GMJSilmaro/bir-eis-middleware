@@ -6,13 +6,14 @@ import {
   appNavigation,
   filterNavByPermissions,
 } from "@/config/app-navigation";
-import { IntegratedPortalCard } from "@/app/(app)/_components/integrated-portal-card";
+// Kept for reuse: sidebar compliance promo card
+// import { IntegratedPortalCard } from "@/app/(app)/_components/integrated-portal-card";
 import { NavMain } from "@/app/(app)/_components/nav-main";
 import { TeamSwitcher } from "@/app/(app)/_components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
+  // SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
 
@@ -40,9 +41,11 @@ export function AppSidebar({
       <SidebarContent>
         <NavMain items={items} />
       </SidebarContent>
+      {/* Reuse later: BIR/EIS Compliance Ready promo in sidebar footer
       <SidebarFooter className="gap-0">
         <IntegratedPortalCard />
       </SidebarFooter>
+      */}
     </Sidebar>
   );
 }

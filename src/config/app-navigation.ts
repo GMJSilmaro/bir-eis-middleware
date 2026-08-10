@@ -25,11 +25,13 @@ export const appNavigation: NavLinkItem[] = [
     href: "/outbound",
     label: "Outbound",
     icon: FileOutput,
+    permission: "documents.view",
   },
   {
     href: "/inbound",
     label: "Inbound",
     icon: FileInput,
+    permission: "documents.view",
   },
   {
     href: "/audit-log",

@@ -17,10 +17,11 @@ model Tenant {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  users         User[]
-  roles         Role[]
-  eisCredential EisCredential?
-  auditLogs     AuditLog[]
+  users             User[]
+  roles             Role[]
+  eisCredential     EisCredential?
+  auditLogs         AuditLog[]
+  invoiceDocuments  InvoiceDocument[]
 
   @@map("tenants")
 }
@@ -38,16 +39,58 @@ model User {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   deletedAt     DateTime? @map("deleted_at")
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userRoles UserRole[]
-  accounts  Account[]
-  sessions  Session[]
-  auditLogs AuditLog[]
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles        UserRole[]
+  accounts         Account[]
+  sessions         Session[]
+  auditLogs        AuditLog[]
+  invoiceDocuments InvoiceDocument[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
   @@index([email])
   @@map("users")
+}
+
+/// Tenant-scoped outbound sales docs and inbound buyer docs (inbox MVP).
+model InvoiceDocument {
+  id                  String    @id @default(cuid())
+  tenantId            String    @map("tenant_id")
+  /// outbound | inbound (inbound direction is legacy; Inbound UI lists outbound submissions)
+  direction           String
+  /// sales_invoice | official_receipt | service_billing | debit_note | credit_note
+  documentType        String    @map("document_type")
+  /// outbound: draft | queued | submitted | accepted | rejected
+  status              String
+  documentNumber      String    @map("document_number")
+  issueDate           DateTime  @map("issue_date") @db.Date
+  currency            String    @default("PHP")
+  counterpartName     String    @map("counterpart_name")
+  counterpartTin      String?   @map("counterpart_tin")
+  lineExtensionAmount Decimal   @map("line_extension_amount") @db.Decimal(18, 2)
+  taxAmount           Decimal   @map("tax_amount") @db.Decimal(18, 2)
+  totalAmount         Decimal   @map("total_amount") @db.Decimal(18, 2)
+  /// MVP line items as JSON array (header amounts are authoritative).
+  lineItems           Json?     @map("line_items")
+  eisReferenceId      String?   @map("eis_reference_id")
+  /// pending | accepted | rejected (EIS response)
+  eisAckStatus        String?   @map("eis_ack_status")
+  eisAckMessage       String?   @map("eis_ack_message") @db.Text
+  eisAckAt            DateTime? @map("eis_ack_at")
+  submittedAt         DateTime? @map("submitted_at")
+  notes               String?   @db.Text
+  createdById         String?   @map("created_by_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, direction, createdAt])
+  @@index([tenantId, status])
+  @@index([tenantId, direction, documentNumber])
+  @@map("invoice_documents")
 }
 
 /// Tenant EIS / PTT credential vault (1:1). API key stored encrypted; UI shows last4 only.

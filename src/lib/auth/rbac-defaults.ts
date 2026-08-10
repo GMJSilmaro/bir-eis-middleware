@@ -6,6 +6,8 @@ export const FOUNDATION_PERMISSIONS = [
   { slug: "settings.manage", name: "Manage settings" },
   { slug: "users.manage", name: "Manage users" },
   { slug: "audit.view", name: "View audit logs" },
+  { slug: "documents.view", name: "View documents" },
+  { slug: "documents.manage", name: "Manage documents" },
 ] as const;
 
 export const FOUNDATION_ROLES = [
@@ -25,12 +27,18 @@ export const FOUNDATION_ROLES = [
       "settings.manage",
       "users.manage",
       "audit.view",
+      "documents.view",
+      "documents.manage",
     ] as const,
   },
   {
     slug: "member",
     name: "Member",
     description: "Standard tenant member",
-    permissions: ["dashboard.view", "settings.view"] as const,
+    permissions: [
+      "dashboard.view",
+      "settings.view",
+      "documents.view",
+    ] as const,
   },
 ] as const;

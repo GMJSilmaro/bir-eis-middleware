@@ -1,7 +1,16 @@
-import type { PrismaClient } from "../src/lib/database/generated/prisma/client";
+import type {
+  Prisma,
+  PrismaClient,
+} from "../src/lib/database/generated/prisma/client";
 import bcrypt from "bcryptjs";
 
-import { DEMO_PASSWORD, DEMO_USERS, PERMISSIONS, ROLES } from "./seed-data";
+import {
+  DEMO_INVOICE_DOCUMENTS,
+  DEMO_PASSWORD,
+  DEMO_USERS,
+  PERMISSIONS,
+  ROLES,
+} from "./seed-data";
 
 /** Dev-only: lower bcrypt cost speeds re-seed (see database/seed-users.md). */
 const BCRYPT_ROUNDS = Number(process.env.SEED_BCRYPT_ROUNDS ?? 8);
@@ -122,6 +131,58 @@ export async function seedCore(prisma: PrismaClient): Promise<CoreSeedResult> {
       });
     }),
   );
+
+  const adminUser = usersByEmail["admin@demo.local"];
+
+  // Soft-delete legacy buyer-style inbound rows (Inbound is now the EIS response inbox).
+  await prisma.invoiceDocument.updateMany({
+    where: {
+      tenantId: demoTenant.id,
+      direction: "inbound",
+      deletedAt: null,
+    },
+    data: { deletedAt: new Date() },
+  });
+
+  for (const doc of DEMO_INVOICE_DOCUMENTS) {
+    const existing = await prisma.invoiceDocument.findFirst({
+      where: {
+        tenantId: demoTenant.id,
+        direction: doc.direction,
+        documentNumber: doc.documentNumber,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (existing) continue;
+
+    await prisma.invoiceDocument.create({
+      data: {
+        tenantId: demoTenant.id,
+        createdById: adminUser?.id ?? null,
+        direction: doc.direction,
+        documentType: doc.documentType,
+        status: doc.status,
+        documentNumber: doc.documentNumber,
+        issueDate: new Date(doc.issueDate),
+        currency: doc.currency,
+        counterpartName: doc.counterpartName,
+        counterpartTin: doc.counterpartTin ?? null,
+        lineExtensionAmount: doc.lineExtensionAmount,
+        taxAmount: doc.taxAmount,
+        totalAmount: doc.totalAmount,
+        lineItems: (doc.lineItems ?? undefined) as
+          | Prisma.InputJsonValue
+          | undefined,
+        eisReferenceId: doc.eisReferenceId ?? null,
+        eisAckStatus: doc.eisAckStatus ?? null,
+        eisAckMessage: doc.eisAckMessage ?? null,
+        eisAckAt: doc.eisAckAt ? new Date(doc.eisAckAt) : null,
+        submittedAt: doc.submittedAt ? new Date(doc.submittedAt) : null,
+        notes: doc.notes ?? null,
+      },
+    });
+  }
 
   return { demoTenant, usersByEmail };
 }

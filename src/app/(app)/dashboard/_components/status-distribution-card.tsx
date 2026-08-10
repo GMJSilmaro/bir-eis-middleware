@@ -4,38 +4,36 @@ import { DashboardNavySurface } from "@/app/(app)/dashboard/_components/dashboar
 import { DEMO_STATUS_DISTRIBUTION } from "@/app/(app)/dashboard/_data/demo-invoices";
 import { Card, CardContent } from "@/components/ui/card";
 
-const SEGMENTS = [
-  {
-    key: "accepted",
-    label: "Accepted",
-    value: DEMO_STATUS_DISTRIBUTION.accepted,
-    color: "#14b8a6",
-  },
-  {
-    key: "rejected",
-    label: "Rejected",
-    value: DEMO_STATUS_DISTRIBUTION.rejected,
-    color: "#ef4444",
-  },
-  {
-    key: "pending",
-    label: "Pending",
-    value: DEMO_STATUS_DISTRIBUTION.pending,
-    color: "#94a3b8",
-  },
-] as const;
+export interface StatusDistributionValues {
+  accepted: number;
+  rejected: number;
+  pending: number;
+}
 
-function conicGradient(): string {
+const SEGMENT_META = [
+  { key: "accepted" as const, label: "Accepted", color: "#14b8a6" },
+  { key: "rejected" as const, label: "Rejected", color: "#ef4444" },
+  { key: "pending" as const, label: "Pending", color: "#94a3b8" },
+];
+
+function conicGradient(values: StatusDistributionValues): string {
   let cursor = 0;
-  const parts = SEGMENTS.map((segment) => {
+  const parts = SEGMENT_META.map((segment) => {
     const start = cursor;
-    cursor += segment.value;
+    cursor += values[segment.key];
     return `${segment.color} ${start}% ${cursor}%`;
   });
   return `conic-gradient(${parts.join(", ")})`;
 }
 
-export function StatusDistributionCard() {
+export function StatusDistributionCard({
+  values,
+}: {
+  values?: StatusDistributionValues | null;
+}) {
+  const distribution = values ?? DEMO_STATUS_DISTRIBUTION;
+  const hasLiveData = Boolean(values);
+
   return (
     <Card className="overflow-hidden border-transparent shadow-[0_6px_24px_rgba(15,23,42,0.07)]">
       <DashboardNavySurface className="px-5 py-4">
@@ -49,7 +47,9 @@ export function StatusDistributionCard() {
               Status Distribution
             </h2>
             <p className="text-xs text-sidebar-muted">
-              Invoice status breakdown.
+              {hasLiveData
+                ? "Outbound status breakdown."
+                : "Invoice status breakdown."}
             </p>
           </div>
         </div>
@@ -57,14 +57,14 @@ export function StatusDistributionCard() {
       <CardContent className="flex flex-col items-center gap-6 px-5 py-8">
         <div
           className="relative size-40 rounded-full shadow-inner"
-          style={{ background: conicGradient() }}
+          style={{ background: conicGradient(distribution) }}
           role="img"
-          aria-label={`Accepted ${DEMO_STATUS_DISTRIBUTION.accepted}%, Rejected ${DEMO_STATUS_DISTRIBUTION.rejected}%, Pending ${DEMO_STATUS_DISTRIBUTION.pending}%`}
+          aria-label={`Accepted ${distribution.accepted}%, Rejected ${distribution.rejected}%, Pending ${distribution.pending}%`}
         >
           <div className="absolute inset-[18%] rounded-full bg-card shadow-sm" />
         </div>
         <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          {SEGMENTS.map((segment) => (
+          {SEGMENT_META.map((segment) => (
             <li
               key={segment.key}
               className="inline-flex items-center gap-2 text-sm text-foreground"
@@ -76,7 +76,7 @@ export function StatusDistributionCard() {
               />
               <span className="font-medium">{segment.label}</span>
               <span className="tabular-nums text-muted-foreground">
-                {segment.value}%
+                {distribution[segment.key]}%
               </span>
             </li>
           ))}
