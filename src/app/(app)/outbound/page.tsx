@@ -14,6 +14,7 @@ import {
   hasPermission,
   requirePermission,
 } from "@/lib/auth/permissions";
+import { prisma } from "@/lib/database/client";
 
 export const metadata = {
   title: "Outbound · BIR EIS",
@@ -59,6 +60,32 @@ export default async function OutboundPage({
     "documents.manage",
   );
 
+  const erpConnections = canManage
+    ? (
+        await prisma.erpConnection.findMany({
+          where: {
+            tenantId: session.user.tenantId,
+            deletedAt: null,
+            enabled: true,
+          },
+          orderBy: { name: "asc" },
+          select: {
+            id: true,
+            name: true,
+            provider: true,
+            lastSyncAt: true,
+          },
+        })
+      ).map((connection) => ({
+        id: connection.id,
+        name: connection.name,
+        provider: connection.provider,
+        lastSyncAt: connection.lastSyncAt
+          ? connection.lastSyncAt.toISOString()
+          : null,
+      }))
+    : [];
+
   const filters = { status, q, documentType };
 
   return (
@@ -67,7 +94,11 @@ export default async function OutboundPage({
         icon={<FileOutput className="size-5" />}
         title="Outbound"
         description="Prepare invoices and receipts, then queue them for submission to BIR EIS."
-        aside={canManage ? <NewDocumentChooser /> : null}
+        aside={
+          canManage ? (
+            <NewDocumentChooser erpConnections={erpConnections} />
+          ) : null
+        }
       />
 
       <DocumentFiltersCard

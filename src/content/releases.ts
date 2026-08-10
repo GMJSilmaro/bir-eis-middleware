@@ -46,6 +46,80 @@ export interface ReleaseNote {
 
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "0.6.0",
+    date: "2026-08-10",
+    releasedAt: "2026-08-10T21:00:00+08:00",
+    title: "Learn the mandate, steps, and requirements on the home page",
+    highlights: [
+      "The public home page now explains the BIR e-invoicing mandate, a clear five-step path, and what you need to prepare",
+      "Help & Support answers common questions and links to official BIR EIS portals",
+      "From your account menu, jump straight to Requirements or Help & Support on the home page",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Home page sections cover the mandate (RR 11-2025 / Dec 2026 wave), an interactive compliance steps timeline, a requirements checklist, and Help & Support with FAQ plus official BIR links",
+      },
+      {
+        type: "feature",
+        description:
+          "Account menus include Help & Support and Requirements so you can open those home-page sections without hunting for them",
+      },
+      {
+        type: "improvement",
+        description:
+          "Landing navigation anchors make it easy to move between Mandate, Steps, Requirements, and Help while staying on the same page",
+      },
+    ],
+  },
+
+  {
+    version: "0.5.0",
+    date: "2026-08-10",
+    releasedAt: "2026-08-10T20:00:00+08:00",
+    title: "Bring invoices in from ERP or Excel",
+    highlights: [
+      "Connect your ERP under Settings and pull sample invoices into Outbound drafts",
+      "Download a ready-made CSV template, upload filled rows, and create many drafts at once",
+      "New document opens ERP Sync or Excel right in the chooser—no need to leave Outbound",
+      "Duplicate document numbers are skipped with clear per-row feedback",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Settings → Integrations lets you save ERP connections (provider, URL, username, encrypted secret) and run a sandbox connection check",
+      },
+      {
+        type: "feature",
+        description:
+          "ERP Sync pulls sample invoices from a saved connection and creates outbound drafts you can review and queue",
+      },
+      {
+        type: "feature",
+        description:
+          "Excel import downloads a BIR-aligned CSV template and uploads up to 200 rows to create outbound drafts in bulk",
+      },
+      {
+        type: "improvement",
+        description:
+          "The New document chooser marks Manual, ERP Sync, and Excel as Available now; ERP Sync and Excel open in the same popup so you stay on Outbound",
+      },
+      {
+        type: "improvement",
+        description:
+          "Create options use white cards with a soft navy icon chip, navy Available now badges, a light navy border that deepens on hover, and a gentle lift",
+      },
+      {
+        type: "improvement",
+        description:
+          "Import and sync results show how many drafts were created, skipped as duplicates, or need a fix",
+      },
+    ],
+  },
+
+  {
     version: "0.4.3",
     date: "2026-08-10",
     releasedAt: "2026-08-10T19:40:00+08:00",

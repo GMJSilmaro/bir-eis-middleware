@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
+import {
+  ChevronsUpDown,
+  CircleHelp,
+  ClipboardList,
+  LogOut,
+  Settings,
+} from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -109,6 +115,18 @@ export function NavUser({ user }: NavUserProps) {
                 <Link href="/settings">
                   <Settings />
                   Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/#help">
+                  <CircleHelp />
+                  Help & Support
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/#requirements">
+                  <ClipboardList />
+                  Requirements
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

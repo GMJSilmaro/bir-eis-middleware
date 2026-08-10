@@ -2,6 +2,7 @@ import {
   Building2,
   KeyRound,
   Lock,
+  Network,
   UserCog,
   UserRound,
   type LucideIcon,
@@ -52,13 +53,19 @@ export const settingsNavigation: SettingsNavGroup[] = [
     ],
   },
   {
-    label: "E-Invoice / BIR EIS",
+    label: "Integrations",
     items: [
       {
         href: "/settings/eis-credentials",
         title: "EIS credentials",
         description: "TIN, PTT, and API key",
         icon: KeyRound,
+      },
+      {
+        href: "/settings/integrations/erp",
+        title: "ERP connections",
+        description: "SAP, Acumatica, ERPNext, and more",
+        icon: Network,
       },
     ],
   },

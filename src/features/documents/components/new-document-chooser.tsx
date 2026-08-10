@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FileSpreadsheet, PenLine, Plus, RefreshCw } from "lucide-react";
+import { ArrowLeft, FileSpreadsheet, PenLine, Plus, RefreshCw } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -13,20 +13,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ExcelImportPanel } from "@/features/documents/components/excel-import-panel";
+import {
+  ErpSyncPanel,
+  type ErpSyncConnectionOption,
+} from "@/features/documents/components/erp-sync-panel";
 import { cn } from "@/utils/cn";
+
+type ChooserStep = "choose" | "erp" | "excel";
 
 function AvailableNowBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center rounded-md bg-primary/12 px-1.5 py-0.5 text-[10px] font-semibold leading-none tracking-wide text-primary uppercase">
+    <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-[hsl(var(--dashboard-navy-from)/0.22)] bg-[hsl(var(--dashboard-navy-blob)/0.18)] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-[hsl(var(--dashboard-navy-to))] uppercase">
       Available now
-    </span>
-  );
-}
-
-function ComingSoonBadge() {
-  return (
-    <span className="inline-flex shrink-0 items-center rounded-md border border-border/70 bg-background/70 px-1.5 py-0.5 text-[10px] font-semibold leading-none tracking-wide text-muted-foreground uppercase backdrop-blur-sm">
-      Coming soon
     </span>
   );
 }
@@ -55,124 +54,206 @@ function OptionCardShell({
   );
 }
 
-const optionCardBase =
-  "group relative flex h-full min-h-[11.5rem] flex-col items-center gap-4 overflow-hidden rounded-2xl border p-5 pt-6 text-center transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out motion-reduce:transition-none sm:min-h-[12.5rem] sm:p-6";
+/** Soft navy accents reuse dashboard navy CSS vars (same as DashboardNavySurface). */
+const optionCardClass = cn(
+  "group relative flex h-full min-h-[11.5rem] cursor-pointer flex-col items-center gap-4 overflow-hidden rounded-2xl border border-[hsl(var(--dashboard-navy-to)/0.15)] bg-card p-5 pt-6 text-center shadow-[0_6px_24px_rgba(15,23,42,0.08)]",
+  "transition-[transform,box-shadow,border-color] duration-200 ease-out motion-reduce:transition-none",
+  "hover:-translate-y-0.5 hover:border-[hsl(var(--dashboard-navy-to)/0.32)] hover:shadow-[0_12px_30px_rgba(15,23,42,0.14)]",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+  "motion-reduce:hover:translate-y-0 sm:min-h-[12.5rem] sm:p-6",
+);
 
-export function NewDocumentChooser() {
+function OptionCardIcon({ children }: { children: ReactNode }) {
+  return (
+    <span
+      className={cn(
+        "relative flex size-12 shrink-0 items-center justify-center rounded-2xl text-sidebar-foreground",
+        "bg-[linear-gradient(135deg,hsl(var(--dashboard-navy-from))_0%,hsl(var(--dashboard-navy-to))_100%)]",
+        "shadow-[0_4px_12px_rgba(15,23,42,0.18),inset_0_0_0_1px_hsl(var(--dashboard-navy-blob)/0.28)]",
+        "transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:group-hover:scale-100",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function OptionCardContent({
+  title,
+  description,
+  icon,
+}: {
+  title: string;
+  description: string;
+  icon: ReactNode;
+}) {
+  return (
+    <>
+      <OptionCardIcon>{icon}</OptionCardIcon>
+      <span className="relative flex min-w-0 flex-1 flex-col items-center gap-2">
+        <span className="flex flex-col items-center gap-1.5">
+          <span className="text-sm font-semibold tracking-tight text-foreground">
+            {title}
+          </span>
+          <AvailableNowBadge />
+        </span>
+        <span className="block text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
+          {description}
+        </span>
+      </span>
+    </>
+  );
+}
+
+function BackToChooserButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="-ml-2 h-8 w-fit cursor-pointer gap-1.5 px-2 text-muted-foreground"
+      onClick={onClick}
+    >
+      <ArrowLeft className="size-3.5" />
+      Back to options
+    </Button>
+  );
+}
+
+export function NewDocumentChooser({
+  erpConnections,
+}: {
+  erpConnections: ErpSyncConnectionOption[];
+}) {
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<ChooserStep>("choose");
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) setStep("choose");
+  }
+
+  function closeChooser() {
+    setOpen(false);
+    setStep("choose");
+  }
+
+  const isChoose = step === "choose";
 
   return (
     <div className="ml-auto flex justify-end">
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button type="button">
             <Plus className="size-4" />
             New document
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-h-[min(90vh,40rem)] gap-5 overflow-y-auto bg-card sm:max-w-2xl">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.07),transparent_55%),radial-gradient(circle_at_100%_0%,hsl(var(--accent)/0.55),transparent_40%)]"
-          />
+        <DialogContent
+          className={cn(
+            "max-h-[min(90vh,40rem)] gap-5 overflow-y-auto bg-card",
+            isChoose ? "sm:max-w-2xl" : "sm:max-w-lg",
+          )}
+        >
+          {isChoose ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Create outbound document</DialogTitle>
+                <DialogDescription>
+                  Choose how you want to prepare a new invoice or receipt.
+                </DialogDescription>
+              </DialogHeader>
 
-          <DialogHeader className="relative z-10">
-            <DialogTitle>Create outbound document</DialogTitle>
-            <DialogDescription>
-              Choose how you want to prepare a new invoice or receipt.
-            </DialogDescription>
-          </DialogHeader>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+                <OptionCardShell animationDelayClass="delay-75">
+                  <Link
+                    href="/outbound/new"
+                    onClick={closeChooser}
+                    className={optionCardClass}
+                  >
+                    <OptionCardContent
+                      title="Manual"
+                      description="Enter invoice or receipt details yourself in the draft form."
+                      icon={
+                        <PenLine className="size-5 sm:size-6" aria-hidden />
+                      }
+                    />
+                  </Link>
+                </OptionCardShell>
 
-          <div className="relative z-10 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-            <OptionCardShell animationDelayClass="delay-75">
-              <Link
-                href="/outbound/new"
-                onClick={() => setOpen(false)}
-                className={cn(
-                  optionCardBase,
-                  "border-primary/35 bg-linear-to-b from-primary/9 to-card shadow-sm shadow-primary/5",
-                  "hover:-translate-y-1 hover:border-primary/60 hover:shadow-md hover:shadow-primary/15",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  "motion-reduce:hover:translate-y-0",
-                )}
-              >
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute -top-8 left-1/2 size-28 -translate-x-1/2 rounded-full bg-primary/10 blur-2xl transition-opacity duration-200 group-hover:opacity-90"
-                />
-                <span className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.18)] transition-transform duration-200 ease-out group-hover:scale-110 group-hover:-rotate-3 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0">
-                  <PenLine className="size-5 sm:size-6" aria-hidden />
-                </span>
-                <span className="relative min-w-0 space-y-2">
-                  <span className="flex flex-col items-center justify-center gap-1.5">
-                    <span className="text-sm font-semibold text-foreground">
-                      Manual
-                    </span>
-                    <AvailableNowBadge />
-                  </span>
-                  <span className="block text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
-                    Enter invoice or receipt details yourself in the draft form.
-                  </span>
-                </span>
-              </Link>
-            </OptionCardShell>
+                <OptionCardShell animationDelayClass="delay-150">
+                  <button
+                    type="button"
+                    onClick={() => setStep("erp")}
+                    className={optionCardClass}
+                  >
+                    <OptionCardContent
+                      title="ERP Sync"
+                      description="Pull documents from SAP B1, Acumatica, ERPNext, and other ERPs."
+                      icon={
+                        <RefreshCw className="size-5 sm:size-6" aria-hidden />
+                      }
+                    />
+                  </button>
+                </OptionCardShell>
 
-            <OptionCardShell animationDelayClass="delay-150">
-              <div
-                aria-disabled="true"
-                className={cn(
-                  optionCardBase,
-                  "cursor-not-allowed border-dashed border-border/90 bg-muted/25 opacity-90 select-none",
-                )}
-              >
-                <span className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-muted/80 text-muted-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]">
-                  <RefreshCw className="size-5 sm:size-6" aria-hidden />
-                </span>
-                <span className="relative min-w-0 space-y-2">
-                  <span className="flex flex-col items-center justify-center gap-1.5">
-                    <span className="text-sm font-semibold text-foreground">
-                      ERP Sync
-                    </span>
-                    <ComingSoonBadge />
-                  </span>
-                  <span className="block text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
-                    Pull documents from SAP B1, Acumatica, ERPNext, and other
-                    ERPs.
-                  </span>
-                </span>
+                <OptionCardShell animationDelayClass="delay-200">
+                  <button
+                    type="button"
+                    onClick={() => setStep("excel")}
+                    className={optionCardClass}
+                  >
+                    <OptionCardContent
+                      title="Excel File"
+                      description="Upload a spreadsheet template to create multiple drafts at once."
+                      icon={
+                        <FileSpreadsheet
+                          className="size-5 sm:size-6"
+                          aria-hidden
+                        />
+                      }
+                    />
+                  </button>
+                </OptionCardShell>
               </div>
-            </OptionCardShell>
 
-            <OptionCardShell animationDelayClass="delay-200">
-              <div
-                aria-disabled="true"
-                className={cn(
-                  optionCardBase,
-                  "cursor-not-allowed border-dashed border-border/90 bg-muted/25 opacity-90 select-none",
-                )}
-              >
-                <span className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-muted/80 text-muted-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]">
-                  <FileSpreadsheet className="size-5 sm:size-6" aria-hidden />
-                </span>
-                <span className="relative min-w-0 space-y-2">
-                  <span className="flex flex-col items-center justify-center gap-1.5">
-                    <span className="text-sm font-semibold text-foreground">
-                      Excel File
-                    </span>
-                    <ComingSoonBadge />
-                  </span>
-                  <span className="block text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
-                    Upload a spreadsheet template to create multiple drafts at
-                    once.
-                  </span>
-                </span>
-              </div>
-            </OptionCardShell>
-          </div>
+              <p className="text-center text-[11px] leading-relaxed text-muted-foreground/80 sm:text-xs">
+                Configure ERP connections under Settings → Integrations when you
+                use ERP Sync.
+              </p>
+            </>
+          ) : null}
 
-          <p className="relative z-10 text-center text-[11px] leading-relaxed text-muted-foreground/80 sm:text-xs">
-            More ways to create documents are coming soon.
-          </p>
+          {step === "erp" ? (
+            <div className="space-y-4">
+              <BackToChooserButton onClick={() => setStep("choose")} />
+              <DialogHeader className="space-y-1.5">
+                <DialogTitle>ERP Sync</DialogTitle>
+                <DialogDescription>
+                  Pull sample invoices into Outbound drafts using a saved
+                  connection.
+                </DialogDescription>
+              </DialogHeader>
+              <ErpSyncPanel
+                connections={erpConnections}
+                onDone={closeChooser}
+              />
+            </div>
+          ) : null}
+
+          {step === "excel" ? (
+            <div className="space-y-4">
+              <BackToChooserButton onClick={() => setStep("choose")} />
+              <DialogHeader className="space-y-1.5">
+                <DialogTitle>Import from Excel</DialogTitle>
+                <DialogDescription>
+                  Download the CSV template, fill your rows, and create outbound
+                  drafts in bulk.
+                </DialogDescription>
+              </DialogHeader>
+              <ExcelImportPanel onDone={closeChooser} />
+            </div>
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

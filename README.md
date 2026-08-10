@@ -2,8 +2,8 @@
 
 Multi-tenant SaaS middleware that maps ERP, manual, and API invoice data to BIR-compliant JSON, signs with JWS, and transmits and tracks submissions to the Bureau of Internal Revenue Electronic Invoicing System (EIS) / eSRS.
 
-**Current version:** `0.4.3`  
-**Status:** Foundation MVP + document inbox (outbound submit queue + inbound EIS responses), portal settings, account profile/password, EIS credential vault, and audit logs
+**Current version:** `0.6.0`  
+**Status:** Foundation MVP + document inbox, ERP/Excel ingest (sandbox sync + CSV import), portal settings, account profile/password, EIS credential vault, audit logs, and public mandate / help education on the landing page
 
 ## Why this exists
 
@@ -87,11 +87,11 @@ src/
 │   └── api/auth/        # Better Auth handler
 ├── components/ui/       # ShadCN primitives
 ├── config/              # Navigation
-├── content/             # releases.ts
+├── content/             # releases.ts, marketing.ts
 ├── features/
 │   ├── auth/            # Register action + schemas
-│   ├── documents/       # Outbound/inbound inbox schemas, actions, UI
-│   └── settings/        # Org + EIS credential forms/actions
+│   ├── documents/       # Outbound/inbound inbox, CSV/ERP ingest, actions, UI
+│   └── settings/        # Org + EIS + ERP connection forms/actions
 ├── lib/                 # auth, audit, crypto, database, shared version helpers
 └── proxy.ts             # Deny-by-default route protection
 ```
@@ -106,17 +106,19 @@ Provider console `(provider)/` and EIS transmit `features/eis/` land in later sl
 
 ## What’s shipped vs roadmap
 
-### Shipped (`0.2.0`–`0.4.2`)
+### Shipped (`0.2.0`–`0.6.0`)
 
 | Item | Notes |
 |------|--------|
 | Multi-tenant auth | Better Auth email/password, tenant-scoped users, register organization |
 | RBAC foundation | Roles + permissions (`dashboard.view`, `settings.*`, `users.manage`, `audit.view`, `documents.view` / `documents.manage`) |
-| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + AuditLog + InvoiceDocument + Better Auth tables |
+| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + ErpConnection + AuditLog + InvoiceDocument + Better Auth tables |
 | App shell | Marketing landing, login/register, authenticated dashboard + shadcn sidebar-07 shell |
+| Landing education | Mandate, interactive steps, requirements checklist, Help & Support; profile-menu links (`0.6.0`) |
 | Dashboard overview | Live outbound / EIS-response KPIs and status mix from documents when present (`0.4.0`+) |
 | Outbound inbox | Prepare and queue invoices for BIR/EIS submission; read-only EIS response on detail (`0.4.0`+) |
 | Inbound inbox | EIS response inbox for those submissions; **Sync from EIS** sandbox refresh (`0.4.1`) |
+| ERP + Excel ingest | Settings → Integrations ERP connections; sandbox ERP sync; CSV template download/upload (max 200 rows) (`0.5.0`) |
 | Organization settings | Name, tagline, logo (`0.3.0`); two-pane Settings menu (`0.3.1`) |
 | EIS credential vault | TIN, Cert/Prod, PTT metadata, encrypted API key with last-4 mask (`0.3.0`) |
 | Audit logs | Tenant-scoped activity list including document events (`0.3.0`+) |
@@ -128,6 +130,7 @@ Provider console `(provider)/` and EIS transmit `features/eis/` land in later sl
 
 | Item | Notes |
 |------|--------|
+| Live ERP HTTP connectors | Real SAP B1 / Acumatica / ERPNext pull beyond sandbox mock |
 | JSON + JWS pipeline | Validate, map, sign (RS256) |
 | EIS transmit adapter | Cert/sandbox first, then production (live HTTP send) |
 | Invite users / role matrix | Admin UX for membership and permissions |

@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   ChevronDown,
+  CircleHelp,
+  ClipboardList,
   FileWarning,
   LogOut,
   Search,
@@ -258,6 +260,18 @@ export function AppHeader({
                 <Link href="/settings">
                   <Settings />
                   Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/#help">
+                  <CircleHelp />
+                  Help & Support
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/#requirements">
+                  <ClipboardList />
+                  Requirements
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

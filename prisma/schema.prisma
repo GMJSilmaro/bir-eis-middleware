@@ -20,6 +20,7 @@ model Tenant {
   users             User[]
   roles             Role[]
   eisCredential     EisCredential?
+  erpConnections    ErpConnection[]
   auditLogs         AuditLog[]
   invoiceDocuments  InvoiceDocument[]
 
@@ -91,6 +92,32 @@ model InvoiceDocument {
   @@index([tenantId, status])
   @@index([tenantId, direction, documentNumber])
   @@map("invoice_documents")
+}
+
+/// Tenant ERP connector credentials (many per tenant). Secret encrypted; UI shows last4 only.
+model ErpConnection {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  /// sap_b1 | acumatica | erpnext | other
+  provider         String
+  name             String
+  baseUrl          String?   @map("base_url")
+  username         String?
+  secretCiphertext String?   @map("secret_ciphertext") @db.Text
+  secretLast4      String?   @map("secret_last4")
+  /// Maps ERP source keys → BIR/portal outbound field names.
+  fieldMap         Json?     @map("field_map")
+  enabled          Boolean   @default(true)
+  lastSyncAt       DateTime? @map("last_sync_at")
+  notes            String?   @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("erp_connections")
 }
 
 /// Tenant EIS / PTT credential vault (1:1). API key stored encrypted; UI shows last4 only.
