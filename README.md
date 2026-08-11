@@ -145,7 +145,7 @@ EIS transmit `features/eis/` lands in a later slice.
 
 1. Install: `pnpm install`
 2. Copy env: `cp .env.example .env.local` and set secrets + Postgres URLs (include `CREDENTIALS_ENCRYPTION_KEY` for the credential vault)
-3. Generate client: `pnpm run db:generate`
+3. Generate client: `pnpm run db:generate` (also runs on `pnpm install` / `pnpm run build`; does not require `.env.local`)
 4. Migrate + seed (when Postgres is reachable):
    ```bash
    pnpm run db:migrate
@@ -164,12 +164,12 @@ Postgres notes: [`database/postgres.example.md`](database/postgres.example.md). 
 | `pnpm run dev` | Development server |
 | `pnpm run lint` | ESLint |
 | `pnpm run typecheck` | TypeScript (`tsc --noEmit`) |
-| `pnpm run db:generate` | Prisma Client generate |
+| `pnpm run db:generate` | Prisma Client generate (no `.env.local` required) |
 | `pnpm run db:migrate` | Create/apply migrations (local) |
 | `pnpm run db:deploy` | Apply migrations (CI/prod) |
 | `pnpm run db:seed` | Seed demo tenant, roles, users, sample documents |
 | `pnpm run db:studio` | Prisma Studio |
-| `pnpm run build` | Production build |
+| `pnpm run build` | Generate Prisma Client, then production build |
 | `pnpm run start` | Start production server |
 
 ## Official + reference links

@@ -1,7 +1,30 @@
+import { existsSync } from "node:fs";
+
 import { config } from "dotenv";
 import { defineConfig, env } from "prisma/config";
 
-config({ path: ".env.local" });
+// Local dev uses .env.local; Vercel/CI inject env vars into the process.
+if (existsSync(".env.local")) {
+  config({ path: ".env.local" });
+}
+
+function resolveDatasourceUrl(): string {
+  const fromEnv = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+  if (fromEnv) {
+    return fromEnv;
+  }
+
+  // `prisma generate` does not open a DB connection. Allow install/build without .env.local.
+  const isGenerate =
+    process.argv.includes("generate") ||
+    process.env.npm_lifecycle_event === "postinstall";
+
+  if (isGenerate) {
+    return "postgresql://prisma:prisma@127.0.0.1:5432/prisma";
+  }
+
+  return env("DIRECT_URL");
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -11,6 +34,6 @@ export default defineConfig({
   },
   datasource: {
     // CLI migrations use direct connection (app runtime uses DATABASE_URL via adapter).
-    url: env("DIRECT_URL"),
+    url: resolveDatasourceUrl(),
   },
 });
