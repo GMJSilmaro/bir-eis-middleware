@@ -89,7 +89,7 @@ export function AuthShell({ children, branding }: AuthShellProps) {
               <p className="text-sm leading-relaxed text-sidebar-muted">
                 {tenantOverlay
                   ? "Access your organization’s e-invoice workspace to prepare, sign, and submit documents to BIR EIS."
-                  : "Multi-tenant middleware for taxpayers who need structured JSON invoices, JWS signing, and reliable transmission to EIS Cert and production."}
+                  : "Fast and secure middleware for taxpayers who need structured JSON invoices, JWS signing, and reliable transmission to EIS Cert and production."}
               </p>
               <ul className="space-y-3">
                 {highlights.map((item) => (

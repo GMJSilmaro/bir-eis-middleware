@@ -43,13 +43,14 @@ export function QueueOutboundButton({
 
   useEffect(() => {
     if (state.success) {
-      setOpen(false);
       router.refresh();
     }
   }, [state.success, router]);
 
   const onNavy = variant === "onNavy";
   const typeLabel = formatDocumentType(documentType);
+  // Close on success without setState-in-effect (refresh remounts after queue).
+  const dialogOpen = open && !state.success;
 
   function handleOpenChange(next: boolean) {
     if (pending && !next) return;
@@ -57,7 +58,7 @@ export function QueueOutboundButton({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <div
         className={cn(
           "flex flex-col items-stretch gap-1 sm:items-end",
