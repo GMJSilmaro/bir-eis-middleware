@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "BIR/EIS | Pixelcare Middleware",
+    default: "BIR/EIS | Pixelcare eInvoicing Middleware",
     template: "%s",
   },
   description:
-    "Multi-tenant middleware for BIR EIS electronic invoicing — prepare, sign, and transmit.",
+    "Fast and secure middleware for BIR EIS electronic invoicing — prepare, sign, and transmit.",
 };
 
 export default function RootLayout({

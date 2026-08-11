@@ -1,6 +1,8 @@
 import { Users } from "lucide-react";
 
 import { PageHeaderCard } from "@/app/(app)/_components/page-header-card";
+import { CreateUserDialog } from "@/features/users/components/create-user-dialog";
+import { UsersTable } from "@/features/users/components/users-table";
 import { requirePermission } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/database/client";
 
@@ -19,55 +21,30 @@ export default async function UsersPage() {
       name: true,
       email: true,
       userRoles: {
-        include: { role: { select: { name: true } } },
+        include: { role: { select: { name: true, slug: true, deletedAt: true } } },
       },
     },
   });
+
+  const rows = users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    roleSlugs: user.userRoles
+      .filter((ur) => ur.role.deletedAt == null)
+      .map((ur) => ur.role.slug),
+  }));
 
   return (
     <div className="space-y-6 lg:space-y-7">
       <PageHeaderCard
         icon={<Users className="size-5" />}
         title="Users"
-        description="People in your organization. Invite and role editing come later."
+        description="Create accounts, change roles, and deactivate people in your organization."
+        aside={<CreateUserDialog />}
       />
 
-      <div className="overflow-hidden rounded-2xl border-transparent bg-card shadow-[0_6px_22px_rgba(15,23,42,0.07)]">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border/60 bg-muted/40 text-left text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Roles</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="px-4 py-10 text-center text-muted-foreground"
-                >
-                  No users found in this organization.
-                </td>
-              </tr>
-            ) : (
-              users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-border/50 last:border-0"
-                >
-                  <td className="px-4 py-3">{user.name || "—"}</td>
-                  <td className="px-4 py-3">{user.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {user.userRoles.map((ur) => ur.role.name).join(", ") || "—"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <UsersTable users={rows} currentUserId={session.user.id} />
     </div>
   );
 }

@@ -19,11 +19,11 @@ export function MarketingHero() {
             {heroContent.primaryCta.label}
           </Link>
         </Button>
-        <Button size="lg" variant="outline" asChild>
+        {/* <Button size="lg" variant="outline" asChild>
           <Link href={heroContent.secondaryCta.href}>
             {heroContent.secondaryCta.label}
           </Link>
-        </Button>
+        </Button> */}
       </div>
     </section>
   );

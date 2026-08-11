@@ -26,6 +26,17 @@ export interface CoreSeedResult {
  * passwords or custom role-permission grants already in the DB.
  */
 export async function seedCore(prisma: PrismaClient): Promise<CoreSeedResult> {
+  await prisma.platformSettings.upsert({
+    where: { id: "default" },
+    create: {
+      id: "default",
+      productName: "BIR EIS | Pixelcare",
+      productTagline: "e-Invoice Middleware",
+      logo: null,
+    },
+    update: {},
+  });
+
   await Promise.all(
     PERMISSIONS.map((perm) =>
       prisma.permission.upsert({

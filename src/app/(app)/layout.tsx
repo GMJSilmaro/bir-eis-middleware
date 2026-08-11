@@ -31,6 +31,7 @@ export default async function AppLayout({
             userName={session.user.name ?? "User"}
             userEmail={session.user.email ?? ""}
             userImage={session.user.image ?? null}
+            isPlatformOperator={session.user.isPlatformOperator}
           />
           <div className="flex flex-1 flex-col px-4 pb-8 sm:px-6 lg:px-8">
             <div className="w-full">{children}</div>

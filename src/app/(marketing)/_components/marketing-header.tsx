@@ -11,7 +11,7 @@ export function MarketingHeader() {
           href="/"
           className="shrink-0 font-semibold tracking-tight text-foreground"
         >
-          BIR EIS
+          BIR EIS | Pixelcare eInvoicing Middleware
         </Link>
         <nav
           aria-label="Landing sections"
@@ -32,7 +32,7 @@ export function MarketingHeader() {
             <Link href="/login">Sign in</Link>
           </Button>
           <Button asChild>
-            <Link href="/register">Get started</Link>
+            <Link href="/login">Get started</Link>
           </Button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
+  Building2,
   ChevronDown,
   CircleHelp,
   ClipboardList,
@@ -78,6 +79,7 @@ interface AppHeaderProps {
   userName: string;
   userEmail: string;
   userImage?: string | null;
+  isPlatformOperator?: boolean;
 }
 
 function getInitials(name: string, email: string): string {
@@ -95,6 +97,7 @@ export function AppHeader({
   userName,
   userEmail,
   userImage,
+  isPlatformOperator = false,
 }: AppHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -256,6 +259,14 @@ export function AppHeader({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              {isPlatformOperator ? (
+                <DropdownMenuItem asChild>
+                  <Link href="/provider">
+                    <Building2 />
+                    Provider console
+                  </Link>
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuItem asChild>
                 <Link href="/settings">
                   <Settings />

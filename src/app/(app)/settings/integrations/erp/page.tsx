@@ -33,7 +33,7 @@ export default async function ErpConnectionsSettingsPage() {
   return (
     <SettingsContentCard
       title="ERP connections"
-      description="Connect your ERP so you can pull invoice drafts into Outbound. Secrets are encrypted at rest and masked after save. Sync uses a sandbox mock for now—no live ERP HTTP."
+      description="Connect your ERP so you can pull invoice drafts into Outbound. Secrets are encrypted at rest and masked after save."
     >
       <ErpConnectionsForm
         canManage={canManage}

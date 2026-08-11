@@ -2,8 +2,8 @@
 
 Multi-tenant SaaS middleware that maps ERP, manual, and API invoice data to BIR-compliant JSON, signs with JWS, and transmits and tracks submissions to the Bureau of Internal Revenue Electronic Invoicing System (EIS) / eSRS.
 
-**Current version:** `0.6.1`  
-**Status:** Foundation MVP + document inbox, ERP/Excel ingest (sandbox sync + CSV import), portal settings, account profile/password, EIS credential vault, audit logs, and public mandate / help education on the landing page
+**Current version:** `0.7.0`  
+**Status:** Foundation MVP + document inbox, ERP/Excel ingest (sandbox sync + CSV import), portal settings, account profile/password, EIS credential vault, audit logs, provider console (workspace provisioning + sign-in branding), organization user management, and public mandate / help education on the landing page
 
 ## Why this exists
 
@@ -47,7 +47,7 @@ Foundation flow (shipped in `0.2.0`):
 ```mermaid
 flowchart TB
   Browser --> Proxy[proxy.ts]
-  Proxy --> AuthPages[auth_login_register]
+  Proxy --> AuthPages[auth_login]
   Proxy --> AppShell[app_dashboard]
   AuthPages --> BetterAuth[Better_Auth_API]
   AppShell --> RequireAuth[requireAuth]
@@ -82,21 +82,25 @@ flowchart TB
 src/
 ├── app/
 │   ├── (marketing)/     # Public landing
-│   ├── (auth)/          # Login, register
+│   ├── (auth)/          # Login (public register disabled)
 │   ├── (app)/           # Tenant app (dashboard, outbound, inbound, settings, audit-log, users)
+│   ├── (provider)/      # Platform operator console (tenants, branding)
 │   └── api/auth/        # Better Auth handler
 ├── components/ui/       # ShadCN primitives
 ├── config/              # Navigation
 ├── content/             # releases.ts, marketing.ts
 ├── features/
-│   ├── auth/            # Register action + schemas
+│   ├── auth/            # Auth actions + schemas
 │   ├── documents/       # Outbound/inbound inbox, CSV/ERP ingest, actions, UI
-│   └── settings/        # Org + EIS + ERP connection forms/actions
+│   ├── provider/        # Provider console actions, branding, schemas
+│   ├── settings/        # Org + EIS + ERP connection forms/actions
+│   ├── tenants/         # Shared tenant provisioning
+│   └── users/           # Tenant user create / role / deactivate
 ├── lib/                 # auth, audit, crypto, database, shared version helpers
 └── proxy.ts             # Deny-by-default route protection
 ```
 
-Provider console `(provider)/` and EIS transmit `features/eis/` land in later slices.
+EIS transmit `features/eis/` lands in a later slice.
 
 ## Stack
 
@@ -106,14 +110,16 @@ Provider console `(provider)/` and EIS transmit `features/eis/` land in later sl
 
 ## What’s shipped vs roadmap
 
-### Shipped (`0.2.0`–`0.6.1`)
+### Shipped (`0.2.0`–`0.7.0`)
 
 | Item | Notes |
 |------|--------|
-| Multi-tenant auth | Better Auth email/password, tenant-scoped users, register organization |
+| Multi-tenant auth | Better Auth email/password, tenant-scoped users; **public self-serve register disabled**—workspaces are provider-provisioned |
+| Provider console | `/provider` for platform operators: create/list/deactivate tenants, first admin, platform sign-in branding (`0.7.0`) |
+| Auth branding | Dynamic login product mark from platform settings; optional `?tenant=` organization overlay (`0.7.0`) |
 | RBAC foundation | Roles + permissions (`dashboard.view`, `settings.*`, `users.manage`, `audit.view`, `documents.view` / `documents.manage`) |
-| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + ErpConnection + AuditLog + InvoiceDocument + Better Auth tables |
-| App shell | Marketing landing, login/register, authenticated dashboard + shadcn sidebar-07 shell |
+| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + ErpConnection + AuditLog + InvoiceDocument + PlatformSettings + Better Auth tables |
+| App shell | Marketing landing, login, authenticated dashboard + shadcn sidebar-07 shell |
 | Landing education | Mandate, interactive steps, requirements checklist, Help & Support; profile-menu links (`0.6.0`) |
 | Dashboard overview | Live outbound / EIS-response KPIs and status mix from documents when present (`0.4.0`+) |
 | Outbound inbox | Prepare and queue invoices for BIR/EIS submission; read-only EIS response on detail (`0.4.0`+) |
@@ -122,7 +128,7 @@ Provider console `(provider)/` and EIS transmit `features/eis/` land in later sl
 | Organization settings | Name, tagline, logo (`0.3.0`); two-pane Settings menu (`0.3.1`) |
 | EIS credential vault | TIN, Cert/Prod, PTT metadata, encrypted API key with last-4 mask (`0.3.0`) |
 | Audit logs | Tenant-scoped activity list including document events (`0.3.0`+) |
-| Users list | Sidebar entry + read-only team table (invite/role edit later) |
+| Users | Create, change role, soft-deactivate (tenant admins; `users.manage`) (`0.7.0`) |
 | Releases | `src/content/releases.ts` aligned with `package.json` |
 | Docs / env | README, `.env.example` (includes `CREDENTIALS_ENCRYPTION_KEY`), Postgres notes |
 
@@ -133,8 +139,7 @@ Provider console `(provider)/` and EIS transmit `features/eis/` land in later sl
 | Live ERP HTTP connectors | Real SAP B1 / Acumatica / ERPNext pull beyond sandbox mock |
 | JSON + JWS pipeline | Validate, map, sign (RS256) |
 | EIS transmit adapter | Cert/sandbox first, then production (live HTTP send) |
-| Invite users / role matrix | Admin UX for membership and permissions |
-| Provider console | Cross-tenant operator views |
+| Email invites | Invite links and richer membership UX beyond admin-created accounts |
 
 ## Setup
 

@@ -3,10 +3,16 @@ import { getSessionCookie } from "better-auth/cookies";
 
 // Deny-by-default: every route requires auth except those listed here, so new
 // app sections are protected automatically.
-const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
+const PUBLIC_PATHS = new Set(["/", "/login"]);
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Public self-serve register is disabled; workspaces are provider-provisioned.
+  if (pathname === "/register") {
+    return NextResponse.redirect(new URL("/login", request.nextUrl.origin));
+  }
+
   const isPublic = PUBLIC_PATHS.has(pathname);
   const sessionCookie = getSessionCookie(request);
   const isLoggedIn = Boolean(sessionCookie);
@@ -17,7 +23,7 @@ export default function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
+  if (isLoggedIn && pathname === "/login") {
     return NextResponse.redirect(new URL("/dashboard", request.nextUrl.origin));
   }
 

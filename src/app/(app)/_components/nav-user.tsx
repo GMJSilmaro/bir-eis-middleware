@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  Building2,
   ChevronsUpDown,
   CircleHelp,
   ClipboardList,
@@ -34,6 +35,7 @@ interface NavUserProps {
     name: string;
     email: string;
     image?: string | null;
+    isPlatformOperator?: boolean;
   };
 }
 
@@ -111,6 +113,14 @@ export function NavUser({ user }: NavUserProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              {user.isPlatformOperator ? (
+                <DropdownMenuItem asChild>
+                  <Link href="/provider">
+                    <Building2 />
+                    Provider console
+                  </Link>
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuItem asChild>
                 <Link href="/settings">
                   <Settings />

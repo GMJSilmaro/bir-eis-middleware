@@ -5,10 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { AppVersion } from "@/app/(auth)/_components/app-version";
-import {
-  AuthPageFooter,
-  AuthPageLink,
-} from "@/app/(auth)/_components/auth-page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -111,11 +107,6 @@ export function LoginForm() {
           "Sign in"
         )}
       </Button>
-
-      <AuthPageFooter>
-        New organization?{" "}
-        <AuthPageLink href="/register">Create an account</AuthPageLink>
-      </AuthPageFooter>
 
       <AppVersion className="w-full pt-1" />
     </form>

@@ -1,11 +1,9 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
 
 import { registerAction } from "@/features/auth/actions/register.action";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/client";
@@ -117,7 +115,7 @@ export function RegisterForm() {
           {state.error}
         </div>
       ) : null}
-      <Button
+      {/* <Button
         type="submit"
         className="h-11 w-full rounded-lg text-sm font-semibold shadow-sm"
         disabled={isBusy}
@@ -130,7 +128,7 @@ export function RegisterForm() {
         ) : (
           "Create organization"
         )}
-      </Button>
+      </Button> */}
     </form>
   );
 }

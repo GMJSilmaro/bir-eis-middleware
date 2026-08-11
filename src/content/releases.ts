@@ -46,6 +46,44 @@ export interface ReleaseNote {
 
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "0.7.0",
+    date: "2026-08-11",
+    releasedAt: "2026-08-11T09:05:00+08:00",
+    title: "Provider workspaces, team accounts, and sign-in branding",
+    highlights: [
+      "Platform operators can set up customer workspaces and first admins from a Provider console",
+      "Organization admins can create team accounts, change roles, and deactivate users",
+      "Sign-in screens use editable product branding, with an optional organization welcome when using a workspace link",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Provider console lets operators create and manage customer workspaces, including the first admin account and a one-time sign-in link",
+      },
+      {
+        type: "feature",
+        description:
+          "Organization admins can add users, change roles, and deactivate accounts from the Users page",
+      },
+      {
+        type: "feature",
+        description:
+          "Product name, tagline, and logo on the sign-in screen are editable, and a workspace link can show that organization’s welcome mark",
+      },
+      {
+        type: "improvement",
+        description:
+          "Public self-serve registration is turned off—new workspaces and accounts are provisioned by the provider or your organization admin",
+      },
+      {
+        type: "improvement",
+        description:
+          "Platform operators see a Provider console shortcut in the account menu for quick access",
+      },
+    ],
+  },
+  {
     version: "0.6.1",
     date: "2026-08-10",
     releasedAt: "2026-08-10T21:50:00+08:00",

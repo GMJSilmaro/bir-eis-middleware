@@ -1,5 +1,5 @@
 /**
- * Public landing / help copy for BIR EIS middleware.
+ * Public landing / help copy for Pixelcare BIR EIS eInvoicing Middleware.
  * Educational tone; product claims stay honest to what the portal ships today.
  */
 
@@ -40,12 +40,13 @@ export const marketingNav = [
 ] as const;
 
 export const heroContent = {
-  eyebrow: "BIR EIS Middleware",
+  eyebrow: "Pixelcare BIR EIS eInvoicing Middleware",
   title: "Electronic invoicing middleware for BIR EIS compliance",
   description:
     "Map ERP, manual, and API invoice data to BIR-ready JSON, sign with JWS, and transmit to EIS Cert or production—with multi-tenant access control built in.",
   primaryCta: { label: "Sign in", href: "/login" },
-  secondaryCta: { label: "Create organization", href: "/register" },
+  /** Public register disabled — workspaces are provider-provisioned. */
+  secondaryCta: { label: "Sign in", href: "/login" },
 } as const;
 
 export const mandateContent = {
@@ -78,7 +79,7 @@ export const stepsContent = {
   title: "Five steps toward EIS-ready invoicing",
   intro:
     "Use this timeline as a practical guide. BIR EIS helps you organize drafts, credentials, and audit trails—while Certification and Permit to Transmit remain your responsibility as the taxpayer.",
-  cta: { label: "Get started", href: "/register" },
+  cta: { label: "Get started", href: "/login" },
   steps: [
     {
       id: "cas-readiness",
@@ -169,7 +170,7 @@ export const helpContent = {
   eyebrow: "Help & Support",
   title: "Answers and official resources",
   intro:
-    "Quick answers about how BIR EIS middleware fits the mandate, plus links to official portals.",
+    "Quick answers about how Pixelcare BIR EIS eInvoicing Middleware fits the mandate, plus links to official portals.",
   faq: [
     {
       question: "Does this app replace my EIS Certification or PTT?",
