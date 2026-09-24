@@ -46,6 +46,40 @@ export interface ReleaseNote {
 
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "0.12.0",
+    date: "2026-09-24",
+    releasedAt: "2026-09-24T16:45:00+08:00",
+    title: "Guided BIR EIS setup wizard and dashboard reminders",
+    highlights: [
+      "New BIR EIS Setup guide in Settings walks you through organization, taxpayer, ERP, documentation, credentials, mapping, and testing",
+      "Dashboard reminds you to finish setup — without claiming BIR certification",
+      "Save progress and continue later; production send stays blocked until readiness checks pass",
+      "Sample data discovery helps spot missing fields before you transmit",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Settings → BIR EIS Setup orchestrates your existing organization, ERP, credentials, and compliance steps in one guided flow",
+      },
+      {
+        type: "feature",
+        description:
+          "Dashboard shows a setup reminder, progress card, and continue link so you do not have to hunt for unfinished steps",
+      },
+      {
+        type: "feature",
+        description:
+          "Data discovery and quality scan on sample ERP data (never sent to BIR) to spot missing or inconsistent fields early",
+      },
+      {
+        type: "improvement",
+        description:
+          "Clearer production blocking messages list what still needs attention in your integration setup",
+      },
+    ],
+  },
+  {
     version: "0.11.0",
     date: "2026-09-24",
     releasedAt: "2026-09-24T15:30:00+08:00",

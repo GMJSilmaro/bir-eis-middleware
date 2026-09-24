@@ -132,3 +132,8 @@ export function sandboxErpPull(params: {
     fields: applyErpFieldMap(payload, map),
   }));
 }
+
+/** Raw SAP B1–style sandbox payloads for field discovery (never transmitted). */
+export function sandboxErpRawSamples(connectionId: string): Record<string, unknown>[] {
+  return buildSandboxPayloads(connectionId);
+}

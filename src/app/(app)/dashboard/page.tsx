@@ -6,12 +6,14 @@ import { DashboardKpiCards } from "@/app/(app)/dashboard/_components/dashboard-k
 import { StatusDistributionCard } from "@/app/(app)/dashboard/_components/status-distribution-card";
 import { TopCustomersCard } from "@/app/(app)/dashboard/_components/top-customers-card";
 import type { DemoTopCustomer } from "@/app/(app)/dashboard/_data/demo-invoices";
+import { DashboardBirSetupSection } from "@/features/bir-setup/components/dashboard-bir-setup-section";
+import { getEisSetupReadiness } from "@/features/bir-setup/lib/get-eis-setup-readiness";
 import {
   counterpartInitials,
   formatMoney,
 } from "@/features/documents/lib/document-format";
 import { getDocumentDashboardStats } from "@/features/documents/lib/document-queries";
-import { requireAuth } from "@/lib/auth/permissions";
+import { hasPermission, requireAuth } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/database/client";
 
 export const metadata = {
@@ -75,12 +77,16 @@ function buildTopCustomers(
 export default async function DashboardPage() {
   const session = await requireAuth();
   const tenantId = session.user.tenantId;
+  const canConfigure =
+    hasPermission(session.user.permissions, "settings.manage") ||
+    hasPermission(session.user.permissions, "compliance.taxpayer.edit");
 
-  const [userCount, stats] = await Promise.all([
+  const [userCount, stats, readiness] = await Promise.all([
     prisma.user.count({
       where: { tenantId, deletedAt: null },
     }),
     getDocumentDashboardStats(tenantId),
+    getEisSetupReadiness(tenantId),
   ]);
 
   const statusDistribution = buildStatusDistribution(
@@ -97,6 +103,10 @@ export default async function DashboardPage() {
         title="Dashboard Overview"
         description="Monitor your e-invoice activities and manage your transactions efficiently."
         showLiveClock
+      />
+      <DashboardBirSetupSection
+        readiness={readiness}
+        canConfigure={canConfigure}
       />
       <DashboardKpiCards
         values={{
