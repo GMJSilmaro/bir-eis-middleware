@@ -256,7 +256,7 @@ function ConnectionEditor({
 
         <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2.5">
           <p className="text-xs font-medium text-foreground">
-            Default field map (read-only for MVP)
+            Default field map 
           </p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {formatDefaultFieldMapHelp()}

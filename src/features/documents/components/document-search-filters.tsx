@@ -105,7 +105,7 @@ export function DocumentSearchFilters({
           name="q"
           value={searchValue}
           onChange={(event) => handleSearchChange(event.target.value)}
-          placeholder="Document number or counterpart"
+          placeholder="Invoice No. or buyer name"
           className="rounded-lg"
         />
       </div>

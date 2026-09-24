@@ -19,6 +19,10 @@ export type DocumentRowActionsProps = {
   };
 };
 
+function surfaceFromHref(detailHref: string): "outbound" | "inbound" {
+  return detailHref.startsWith("/inbound") ? "inbound" : "outbound";
+}
+
 export function DocumentRowActions({
   detailHref,
   canManage,
@@ -28,6 +32,7 @@ export function DocumentRowActions({
   const [cancelling, setCancelling] = useState(false);
   const eligibility = canRequestCancellation(document);
   const showCancel = canManage && eligibility.allowed;
+  const surface = surfaceFromHref(detailHref);
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-1.5">
@@ -57,6 +62,7 @@ export function DocumentRowActions({
           open={cancelOpen}
           onOpenChange={setCancelOpen}
           showTrigger={false}
+          surface={surface}
           onPendingChange={setCancelling}
         />
       ) : null}

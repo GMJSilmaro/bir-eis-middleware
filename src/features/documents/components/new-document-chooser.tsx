@@ -192,7 +192,7 @@ export function NewDocumentChooser({
                   >
                     <OptionCardContent
                       title="ERP Sync"
-                      description="Pull documents from SAP B1, Acumatica, ERPNext, and other ERPs."
+                      description="Pull documents from your connected ERP systems."
                       icon={
                         <RefreshCw className="size-5 sm:size-6" aria-hidden />
                       }

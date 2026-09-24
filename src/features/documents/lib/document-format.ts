@@ -17,6 +17,29 @@ export function formatIssueDate(date: Date | string): string {
   }).format(value);
 }
 
+/** Timestamps with clock time (created/updated, acknowledgements). */
+export function formatDateTime(date: Date | string | null | undefined): string {
+  if (!date) return "—";
+  const value = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(value.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-PH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
+}
+
+export function formatCreatedByName(user: {
+  name?: string | null;
+  email?: string | null;
+} | null | undefined): string {
+  if (!user) return "—";
+  const name = user.name?.trim();
+  if (name) return name;
+  const email = user.email?.trim();
+  if (email) return email;
+  return "—";
+}
+
 export function formatMoney(
   amount: { toString(): string } | string | number,
   currency = "PHP",

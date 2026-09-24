@@ -54,17 +54,32 @@ function summarizeMetadata(metadata: unknown): string {
   if (typeof record.direction === "string") {
     parts.push(`Direction: ${record.direction}`);
   }
+  if (typeof record.surface === "string") {
+    parts.push(`From: ${record.surface}`);
+  }
   if (typeof record.documentNumber === "string") {
     parts.push(`Doc: ${record.documentNumber}`);
   }
   if (typeof record.status === "string") {
     parts.push(`Status: ${record.status}`);
   }
+  if (typeof record.cancellationStatus === "string") {
+    parts.push(`Cancel: ${record.cancellationStatus}`);
+  }
+  if (typeof record.reason === "string") {
+    parts.push(`Reason: ${record.reason.replace(/_/g, " ")}`);
+  }
+  if (typeof record.remarks === "string" && record.remarks.trim()) {
+    parts.push(`Remarks: ${record.remarks.trim()}`);
+  }
   if (typeof record.eisAckStatus === "string") {
     parts.push(`EIS response: ${record.eisAckStatus}`);
   }
   if (typeof record.syncedCount === "number") {
     parts.push(`Synced: ${record.syncedCount}`);
+  }
+  if (typeof record.cancellationSyncedCount === "number") {
+    parts.push(`Cancellations synced: ${record.cancellationSyncedCount}`);
   }
 
   return parts.length > 0 ? parts.join(" · ") : "—";
@@ -157,7 +172,7 @@ export default async function AuditLogPage({
                       </span>
                     ) : null}
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-muted-foreground">
+                  <TableCell className="max-w-md whitespace-normal break-words text-muted-foreground">
                     {summarizeMetadata(log.metadata)}
                   </TableCell>
                 </TableRow>

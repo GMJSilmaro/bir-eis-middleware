@@ -9,6 +9,8 @@ import {
   EisAckStatusBadge,
 } from "@/features/documents/components/document-status-badge";
 import {
+  formatCreatedByName,
+  formatDateTime,
   formatDocumentType,
   formatIssueDate,
   formatMoney,
@@ -31,6 +33,39 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/utils/cn";
 
+const SOURCE_BADGE_STYLES: Record<string, string> = {
+  Manual: "bg-slate-100 text-slate-700",
+  Excel: "bg-emerald-50 text-emerald-800",
+  ERP: "bg-sky-50 text-sky-800",
+};
+
+function DocumentSourceBadge({
+  source,
+  sourceSystem,
+  sourceLabel,
+}: {
+  source: string;
+  sourceSystem?: string | null;
+  sourceLabel?: string | null;
+}) {
+  const label = formatDocumentSourceLabel({
+    source,
+    sourceSystem,
+    sourceLabel,
+  });
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold",
+        SOURCE_BADGE_STYLES[label] ?? "bg-muted text-muted-foreground",
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
 export interface DocumentListRow {
   id: string;
   documentType: string;
@@ -48,6 +83,15 @@ export interface DocumentListRow {
   source?: string;
   sourceSystem?: string | null;
   sourceLabel?: string | null;
+  /** ISO datetime from the list DTO. */
+  createdAt?: string | Date | null;
+  /** ISO datetime from the list DTO. */
+  updatedAt?: string | Date | null;
+  createdBy?: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+  } | null;
 }
 
 export interface DocumentListFiltersState {
@@ -143,7 +187,7 @@ export function DocumentListTable({
 
   return (
     <div className="space-y-4">
-      <Table className="min-w-[880px]">
+      <Table className="min-w-[1100px]">
         <TableHeader>
           <TableRow>
             <TableHead className="w-10 px-3 pr-0">
@@ -158,9 +202,9 @@ export function DocumentListTable({
             <TableHead className="w-12 px-2 text-center tabular-nums">
               #
             </TableHead>
-            <TableHead>Number</TableHead>
+            <TableHead>Invoice No.</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Counterpart</TableHead>
+            <TableHead>Buyer Name</TableHead>
             <TableHead>Issue date</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Status</TableHead>
@@ -169,6 +213,9 @@ export function DocumentListTable({
             ) : (
               <TableHead>EIS response</TableHead>
             )}
+            <TableHead>Created At</TableHead>
+            <TableHead>Updated At</TableHead>
+            <TableHead>Created By</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -176,7 +223,6 @@ export function DocumentListTable({
           {documents.map((doc, index) => {
             const rowIndex = (page - 1) * DOCUMENT_PAGE_SIZE + index + 1;
             const isSelected = selectedIds.has(doc.id);
-
             return (
               <TableRow
                 key={doc.id}
@@ -224,16 +270,23 @@ export function DocumentListTable({
                 </TableCell>
                 <TableCell>
                   {isOutbound ? (
-                    <span className="text-muted-foreground">
-                      {formatDocumentSourceLabel({
-                        source: doc.source ?? "manual",
-                        sourceSystem: doc.sourceSystem,
-                        sourceLabel: doc.sourceLabel,
-                      })}
-                    </span>
+                    <DocumentSourceBadge
+                      source={doc.source ?? "manual"}
+                      sourceSystem={doc.sourceSystem}
+                      sourceLabel={doc.sourceLabel}
+                    />
                   ) : (
                     <EisAckStatusBadge status={doc.eisAckStatus} />
                   )}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  {formatDateTime(doc.createdAt)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  {formatDateTime(doc.updatedAt)}
+                </TableCell>
+                <TableCell className="min-w-[11rem] max-w-[16rem] whitespace-normal break-words text-muted-foreground">
+                  {formatCreatedByName(doc.createdBy)}
                 </TableCell>
                 <TableCell className="text-right">
                   <DocumentRowActions

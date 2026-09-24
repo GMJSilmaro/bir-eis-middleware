@@ -254,6 +254,7 @@ export async function syncEisResponsesAction(
       revalidatePath("/inbound");
       revalidatePath("/outbound");
       revalidatePath("/dashboard");
+      revalidatePath("/audit-log");
       for (const doc of pendingCancellations) {
         revalidatePath(`/outbound/${doc.id}`);
         revalidatePath(`/inbound/${doc.id}`);

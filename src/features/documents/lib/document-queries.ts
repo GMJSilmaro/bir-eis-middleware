@@ -215,6 +215,8 @@ export async function listDocuments(params: ListDocumentsParams) {
           sourceSystem: true,
           sourceLabel: true,
           createdAt: true,
+          updatedAt: true,
+          createdBy: { select: { id: true, name: true, email: true } },
         },
       }),
     ]),
@@ -239,6 +241,14 @@ export async function listDocuments(params: ListDocumentsParams) {
     sourceSystem: doc.sourceSystem,
     sourceLabel: doc.sourceLabel,
     createdAt: doc.createdAt.toISOString(),
+    updatedAt: doc.updatedAt.toISOString(),
+    createdBy: doc.createdBy
+      ? {
+          id: doc.createdBy.id,
+          name: doc.createdBy.name,
+          email: doc.createdBy.email,
+        }
+      : null,
   }));
 
   const totalPages = Math.max(1, Math.ceil(total / DOCUMENT_PAGE_SIZE));

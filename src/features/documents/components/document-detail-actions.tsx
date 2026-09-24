@@ -24,7 +24,12 @@ export type DocumentDetailActionsProps = {
   className?: string;
 };
 
+function surfaceFromHref(detailHref: string): "outbound" | "inbound" {
+  return detailHref.startsWith("/inbound") ? "inbound" : "outbound";
+}
+
 export function DocumentDetailActions({
+  detailHref,
   canManage,
   document,
   leading,
@@ -36,6 +41,7 @@ export function DocumentDetailActions({
   const eligibility = canRequestCancellation(document);
   const showCancel = canManage && eligibility.allowed;
   const onNavy = menuTriggerVariant === "onNavy";
+  const surface = surfaceFromHref(detailHref);
 
   return (
     <div className={cn("flex flex-wrap items-center justify-end gap-2", className)}>
@@ -62,6 +68,7 @@ export function DocumentDetailActions({
             onOpenChange={setCancelOpen}
             showTrigger={false}
             variant={onNavy ? "onNavy" : "default"}
+            surface={surface}
             onPendingChange={setCancelling}
           />
         </>

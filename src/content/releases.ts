@@ -46,6 +46,52 @@ export interface ReleaseNote {
 
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "0.10.1",
+    date: "2026-09-24",
+    releasedAt: "2026-09-24T14:15:00+08:00",
+    title: "Document list shows who and when",
+    highlights: [
+      "Outbound and inbound document lists show when each record was created and last updated",
+      "See who created each document right in the list, with full names that wrap to stay readable",
+      "Source shows a simple Manual, Excel, or ERP badge — no vendor names in the list",
+      "List columns use Invoice No. and Buyer Name to match familiar EIS wording",
+      "List pages no longer flash a skeleton table while loading",
+      "Cancellation activity in Audit Logs shows where it was requested and why",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Document lists include Created At, Updated At, and Created By so you can see when a record was added, when it last changed, and who created it",
+      },
+      {
+        type: "improvement",
+        description:
+          "Creator names in the document list wrap so longer names stay fully readable",
+      },
+      {
+        type: "improvement",
+        description:
+          "Outbound Source uses compact Manual, Excel, and ERP badges instead of long system or connection names",
+      },
+      {
+        type: "improvement",
+        description:
+          "Document list columns use Invoice No. and Buyer Name instead of Number and Counterpart",
+      },
+      {
+        type: "improvement",
+        description:
+          "Outbound, inbound, users, and audit log pages skip the skeleton table while content loads",
+      },
+      {
+        type: "fix",
+        description:
+          "Cancelling from Inbound now shows clearly in Audit Logs, including the reason and that it was started from Inbound",
+      },
+    ],
+  },
+  {
     version: "0.10.0",
     date: "2026-09-23",
     releasedAt: "2026-09-23T23:45:00+08:00",

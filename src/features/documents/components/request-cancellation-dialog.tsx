@@ -65,6 +65,8 @@ type RequestCancellationDialogProps = {
   onOpenChange?: (open: boolean) => void;
   /** Mirrors form submit pending state for external Cancel buttons. */
   onPendingChange?: (pending: boolean) => void;
+  /** Where the cancel was started — stored on audit events for clarity. */
+  surface?: "outbound" | "inbound";
 };
 
 export function RequestCancellationDialog({
@@ -75,6 +77,7 @@ export function RequestCancellationDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   onPendingChange,
+  surface = "outbound",
 }: RequestCancellationDialogProps) {
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -210,6 +213,7 @@ export function RequestCancellationDialog({
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="id" value={document.id} />
           <input type="hidden" name="reason" value={reason} />
+          <input type="hidden" name="surface" value={surface} />
 
           <div className="space-y-2">
             <Label htmlFor="cancellation-reason">Reason</Label>

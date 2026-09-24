@@ -35,6 +35,7 @@ export async function requestDocumentCancellationAction(
     id: formData.get("id"),
     reason: formData.get("reason"),
     remarks: formData.get("remarks") ?? "",
+    surface: formData.get("surface") || "outbound",
   });
 
   if (!parsed.success) {
@@ -73,6 +74,7 @@ export async function requestDocumentCancellationAction(
 
   const previousBusinessStatus = deriveBusinessStatus(existing);
   const remarks = parsed.data.remarks?.trim() || null;
+  const surface = parsed.data.surface;
   const now = new Date();
 
   try {
@@ -104,6 +106,8 @@ export async function requestDocumentCancellationAction(
         entityId: existing.id,
         metadata: {
           documentNumber: existing.documentNumber,
+          direction: "outbound",
+          surface,
           originalEisReferenceId: existing.eisReferenceId,
           reason: parsed.data.reason,
           remarks,
@@ -147,6 +151,8 @@ export async function requestDocumentCancellationAction(
         entityId: existing.id,
         metadata: {
           documentNumber: existing.documentNumber,
+          direction: "outbound",
+          surface,
           originalEisReferenceId: existing.eisReferenceId,
           cancellationReferenceId: submitResult.cancellationReferenceId,
           reason: parsed.data.reason,
@@ -164,6 +170,7 @@ export async function requestDocumentCancellationAction(
       revalidatePath("/inbound");
       revalidatePath(`/inbound/${existing.id}`);
       revalidatePath("/dashboard");
+      revalidatePath("/audit-log");
     });
 
     logPerfTotal("requestDocumentCancellation", perfStart);

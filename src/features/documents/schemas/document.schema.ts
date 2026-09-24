@@ -181,6 +181,8 @@ export const requestDocumentCancellationSchema = z
       .max(2000, "Remarks are too long")
       .optional()
       .or(z.literal("")),
+    /** UI surface where the cancel was started (for audit clarity). */
+    surface: z.enum(["outbound", "inbound"]).optional().default("outbound"),
   })
   .superRefine((value, ctx) => {
     if (value.reason === "other" && !value.remarks?.trim()) {
