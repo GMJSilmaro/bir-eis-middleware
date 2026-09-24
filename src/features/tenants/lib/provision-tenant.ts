@@ -168,6 +168,18 @@ export async function provisionTenantWithAdmin(
 
   await seedTenantRoles(tenant.id);
 
+  await Promise.all([
+    prisma.complianceActivation.create({
+      data: { tenantId: tenant.id, gateState: "DRAFT" },
+    }),
+    prisma.taxpayerProfile.create({
+      data: { tenantId: tenant.id, profileStatus: "NOT_PROVIDED" },
+    }),
+    prisma.certificationProfile.create({
+      data: { tenantId: tenant.id, status: "NOT_RECORDED" },
+    }),
+  ]);
+
   const user = await createTenantUser({
     tenantId: tenant.id,
     name: input.adminName,

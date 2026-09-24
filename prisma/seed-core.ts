@@ -212,5 +212,53 @@ export async function seedCore(prisma: PrismaClient): Promise<CoreSeedResult> {
     });
   }
 
+  await prisma.taxpayerProfile.upsert({
+    where: { tenantId: demoTenant.id },
+    create: {
+      tenantId: demoTenant.id,
+      registeredName: "BIR EIS Demo Taxpayer",
+      tin: "123456789000",
+      branchCode: "00000",
+      officeType: "head_office",
+      rdoCode: "LTS",
+      classification: "large_taxpayer",
+      vatMode: "vat",
+      businessAddress: "Demo address, Metro Manila",
+      profileStatus: "REVIEWED",
+    },
+    update: {},
+  });
+
+  await prisma.complianceActivation.upsert({
+    where: { tenantId: demoTenant.id },
+    create: { tenantId: demoTenant.id, gateState: "DRAFT" },
+    update: {},
+  });
+
+  await prisma.certificationProfile.upsert({
+    where: { tenantId: demoTenant.id },
+    create: { tenantId: demoTenant.id, status: "NOT_RECORDED" },
+    update: {},
+  });
+
+  const existingCas = await prisma.casRegistration.findFirst({
+    where: { tenantId: demoTenant.id },
+  });
+  if (!existingCas) {
+    await prisma.casRegistration.create({
+      data: {
+        tenantId: demoTenant.id,
+        ackCertificateRef: "DEMO-AC-001",
+        issuedAt: new Date("2026-01-15"),
+        registeredSystem: "Demo CAS",
+        systemVersion: "1.0",
+        rdoOffice: "LTS",
+        applicability: "head_office",
+        status: "UNDER_REVIEW",
+        notes: "Demo documentary evidence — not BIR-verified by this app",
+      },
+    });
+  }
+
   return { demoTenant, usersByEmail };
 }

@@ -46,6 +46,46 @@ export interface ReleaseNote {
 
 export const RELEASES: ReleaseNote[] = [
   {
+    version: "0.11.0",
+    date: "2026-09-24",
+    releasedAt: "2026-09-24T15:30:00+08:00",
+    title: "EIS integration readiness and compliance onboarding",
+    highlights: [
+      "New Compliance area to capture taxpayer details, ERP/CAS profile, and CAS documentation",
+      "Field mapping and shared validation checks before invoices are queued for EIS",
+      "EIS Integration Readiness shows what still blocks production — without calling anything BIR certified",
+      "Sandbox transmit with clearer queue vs send wording, retries for technical failures, and reconciliation",
+      "Stronger audit trail for compliance-sensitive changes",
+    ],
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Compliance workspace covers taxpayer profile, ERP/CAS registration evidence, field mapping, validation rules, readiness, reconciliation, and a compliance audit trail",
+      },
+      {
+        type: "feature",
+        description:
+          "Shared validation engine checks invoices before queue/transmit and can quarantine blocking issues without changing ERP amounts",
+      },
+      {
+        type: "feature",
+        description:
+          "EIS Integration Readiness and production activation gates — with audited override that cannot claim BIR verification",
+      },
+      {
+        type: "improvement",
+        description:
+          "Queue and transmit wording clarifies local queue vs sandbox send; dashboard status no longer implies live BIR monitoring",
+      },
+      {
+        type: "fix",
+        description:
+          "Removed “BIR/EIS Compliance Ready” phrasing that could be mistaken for BIR accreditation",
+      },
+    ],
+  },
+  {
     version: "0.10.1",
     date: "2026-09-24",
     releasedAt: "2026-09-24T14:15:00+08:00",

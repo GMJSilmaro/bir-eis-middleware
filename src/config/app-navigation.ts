@@ -3,6 +3,7 @@ import {
   FileOutput,
   History,
   LayoutDashboard,
+  ShieldCheck,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -32,6 +33,12 @@ export const appNavigation: NavLinkItem[] = [
     label: "Inbound",
     icon: FileInput,
     permission: "documents.view",
+  },
+  {
+    href: "/compliance",
+    label: "Compliance",
+    icon: ShieldCheck,
+    permission: "compliance.view",
   },
   {
     href: "/audit-log",

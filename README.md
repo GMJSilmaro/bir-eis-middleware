@@ -2,8 +2,8 @@
 
 Multi-tenant SaaS middleware that maps ERP, manual, and API invoice data to BIR-compliant JSON, signs with JWS, and transmits and tracks submissions to the Bureau of Internal Revenue Electronic Invoicing System (EIS) / eSRS.
 
-**Current version:** `0.10.1`  
-**Status:** Foundation MVP + document inbox, ERP/Excel ingest (sandbox sync + CSV import), CAS-shaped draft EIS JSON preview on outbound documents, portal settings, account profile/password, EIS credential vault, audit logs, provider console (workspace provisioning + sign-in branding), organization user management, invoice cancellation (sandbox), and public mandate / help education on the landing page
+**Current version:** `0.11.0`  
+**Status:** Foundation MVP + Compliance Onboarding & EIS Integration Readiness (taxpayer/CAS profiles, field mapping, centralized validation, sandbox transmit ledger, reconciliation, production activation gates), document inbox, ERP/Excel ingest, CAS-shaped draft EIS JSON preview, portal settings, EIS credential vault, audit logs, provider console, organization user management, invoice cancellation (sandbox), and public mandate / help education on the landing page
 
 ## Why this exists
 
@@ -93,7 +93,8 @@ src/
 ├── features/
 │   ├── auth/            # Auth actions + schemas
 │   ├── documents/       # Outbound/inbound inbox, CSV/ERP ingest, actions, UI
-│   ├── eis/             # Sandbox EIS adapters (cancellation; transmit later)
+│   ├── compliance/      # Onboarding, readiness, mapping, validation, reconciliation
+│   ├── eis/             # Sandbox EIS adapters (transmit + cancellation)
 │   ├── provider/        # Provider console actions, branding, schemas
 │   ├── settings/        # Org + EIS + ERP connection forms/actions
 │   ├── tenants/         # Shared tenant provisioning
@@ -106,31 +107,32 @@ EIS transmit and cancellation adapters live under `features/eis/` (sandbox / cer
 
 ## Stack
 
-**Installed:** Next.js 16 · React 19 · Tailwind CSS 4 · TypeScript · ESLint · ShadCN (new-york/zinc) · Better Auth · Prisma 7 · PostgreSQL · Zod · bcryptjs
+**Installed:** Next.js 16 · React 19 · Tailwind CSS 4 · TypeScript · ESLint · ShadCN (new-york/zinc) · Better Auth · Prisma 7 · PostgreSQL · Zod · bcryptjs · Vitest
 
-**Planned later:** React Hook Form · Zustand · Pino · Resend · React PDF · EIS JSON/JWS transmit adapters
+**Planned later:** React Hook Form · Zustand · Pino · Resend · React PDF · live EIS JSON/JWS transmit adapters
 
 ## What’s shipped vs roadmap
 
-### Shipped (`0.2.0`–`0.8.2`)
+### Shipped (`0.2.0`–`0.11.0`)
 
 | Item | Notes |
 |------|--------|
 | Multi-tenant auth | Better Auth email/password, tenant-scoped users; **public self-serve register disabled**—workspaces are provider-provisioned |
 | Provider console | `/provider` for platform operators: create/list/deactivate tenants, first admin, platform sign-in branding (`0.7.0`) |
 | Auth branding | Dynamic login product mark from platform settings; optional `?tenant=` organization overlay (`0.7.0`) |
-| RBAC foundation | Roles + permissions (`dashboard.view`, `settings.*`, `users.manage`, `audit.view`, `documents.view` / `documents.manage`) |
-| Prisma 7 + Postgres | Tenant/User/Role/Permission + EisCredential + ErpConnection + AuditLog + InvoiceDocument + PlatformSettings + Better Auth tables |
+| RBAC foundation | Roles + permissions including compliance.* (`0.11.0`) |
+| Prisma 7 + Postgres | Tenant/User/RBAC + EisCredential + ErpConnection + AuditLog + InvoiceDocument + Compliance models (`0.11.0`) + PlatformSettings + Better Auth tables |
 | App shell | Marketing landing, login, authenticated dashboard + shadcn sidebar-07 shell |
 | Landing education | Mandate, interactive steps, requirements checklist, Help & Support; profile-menu links (`0.6.0`) |
 | Dashboard overview | Live outbound / EIS-response / cancellation KPIs and status mix from documents when present (`0.4.0`+) |
-| Outbound inbox | Prepare and queue invoices for BIR/EIS submission; single business status; View / Cancel actions; transaction history (`0.9.0`); **View JSON** draft EIS payload (`0.10.0`) |
+| Outbound inbox | Prepare and queue invoices; sandbox transmit; View / Cancel; transaction history; draft EIS JSON (`0.9.0`–`0.11.0`) |
 | Invoice cancellation | Sandbox-only adapter (no live BIR cancel API in repo); Cancel when EIS-accepted; Sync from EIS refreshes pending cancels (`0.8.0`–`0.9.0`) |
 | Inbound inbox | EIS response inbox with the same status, Cancel, and transaction history as outbound (`0.9.0`); **Sync from EIS** sandbox refresh (`0.4.1`) |
+| Compliance framework | Taxpayer profile, CAS evidence, ERP/CAS profile, field mapping, rule engine, readiness, reconciliation, production gates (`0.11.0`) |
 | ERP + Excel ingest | Settings → Integrations ERP connections; sandbox ERP sync; CSV template download/upload (max 200 rows) (`0.5.0`) |
 | Organization settings | Name, tagline, logo (`0.3.0`); two-pane Settings menu (`0.3.1`) |
 | EIS credential vault | TIN, Cert/Prod, PTT metadata, encrypted API key with last-4 mask (`0.3.0`) |
-| Audit logs | Tenant-scoped activity list including document and cancellation events (`0.3.0`+) |
+| Audit logs | Tenant-scoped activity list including document, cancellation, and compliance events (`0.3.0`+) |
 | Users | Create, change role, soft-deactivate (tenant admins; `users.manage`) (`0.7.0`) |
 | Releases | `src/content/releases.ts` aligned with `package.json` |
 | Docs / env | README, `.env.example` (includes `CREDENTIALS_ENCRYPTION_KEY`), Postgres notes |
@@ -141,7 +143,7 @@ EIS transmit and cancellation adapters live under `features/eis/` (sandbox / cer
 |------|--------|
 | Live ERP HTTP connectors | Real SAP B1 / Acumatica / ERPNext pull beyond sandbox mock |
 | JSON + JWS pipeline | CAS-shaped unsigned draft JSON mapping started (`0.10.0`); validate + JWS sign (RS256) still later |
-| EIS transmit adapter | Cert/sandbox first, then production (live HTTP send) |
+| Live EIS transmit adapter | Production HTTP send after cert/sandbox path |
 | Email invites | Invite links and richer membership UX beyond admin-created accounts |
 
 ## Setup
@@ -167,6 +169,7 @@ Postgres notes: [`database/postgres.example.md`](database/postgres.example.md). 
 | `pnpm run dev` | Development server |
 | `pnpm run lint` | ESLint |
 | `pnpm run typecheck` | TypeScript (`tsc --noEmit`) |
+| `pnpm run test` | Vitest unit tests |
 | `pnpm run db:generate` | Prisma Client generate (no `.env.local` required) |
 | `pnpm run db:migrate` | Create/apply migrations (local) |
 | `pnpm run db:deploy` | Apply migrations (CI/prod) |
