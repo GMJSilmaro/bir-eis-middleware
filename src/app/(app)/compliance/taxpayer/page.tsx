@@ -20,6 +20,7 @@ export default async function ComplianceTaxpayerPage() {
         canEdit={canEdit}
         initial={{
           registeredName: profile.registeredName ?? "",
+          tradeName: profile.tradeName ?? "",
           tin: profile.tin ?? "",
           branchCode: profile.branchCode ?? "",
           officeType: profile.officeType ?? "head_office",
@@ -27,6 +28,9 @@ export default async function ComplianceTaxpayerPage() {
           classification: profile.classification ?? "",
           vatMode: profile.vatMode ?? "vat",
           businessAddress: profile.businessAddress ?? "",
+          businessType: profile.businessType ?? "",
+          ecommerceEngaged: profile.ecommerceEngaged ?? "",
+          usesCas: profile.usesCas ?? "",
           contactName: profile.contactName ?? "",
           contactEmail: profile.contactEmail ?? "",
           contactPhone: profile.contactPhone ?? "",

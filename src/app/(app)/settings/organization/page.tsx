@@ -1,5 +1,6 @@
 import { OrganizationSettingsForm } from "@/features/settings/components/organization-settings-form";
 import { SettingsContentCard } from "@/features/settings/components/settings-content-card";
+import { SettingsBirSetupStrip } from "@/features/bir-setup/components/settings-bir-setup-strip";
 import {
   hasPermission,
   requirePermission,
@@ -20,24 +21,27 @@ export default async function OrganizationSettingsPage() {
   });
 
   return (
-    <SettingsContentCard
-      title="Organization"
-      description="Name and branding shown across your workspace."
-    >
-      <OrganizationSettingsForm
-        key={[
-          tenant.name,
-          tenant.tagline ?? "",
-          (tenant.logo ?? "").slice(0, 64),
-          (tenant.logo ?? "").length,
-        ].join("|")}
-        canManage={canManage}
-        initial={{
-          name: tenant.name,
-          tagline: tenant.tagline ?? "",
-          logo: tenant.logo ?? "",
-        }}
-      />
-    </SettingsContentCard>
+    <div className="space-y-4">
+      <SettingsBirSetupStrip tenantId={session.user.tenantId} />
+      <SettingsContentCard
+        title="Organization"
+        description="Name and branding shown across your workspace."
+      >
+        <OrganizationSettingsForm
+          key={[
+            tenant.name,
+            tenant.tagline ?? "",
+            (tenant.logo ?? "").slice(0, 64),
+            (tenant.logo ?? "").length,
+          ].join("|")}
+          canManage={canManage}
+          initial={{
+            name: tenant.name,
+            tagline: tenant.tagline ?? "",
+            logo: tenant.logo ?? "",
+          }}
+        />
+      </SettingsContentCard>
+    </div>
   );
 }

@@ -15,6 +15,9 @@ export type CasEisDocumentType =
 export type CasEisSellerInput = {
   tin: string | null | undefined;
   registeredName: string | null | undefined;
+  branchCode?: string | null | undefined;
+  address?: string | null | undefined;
+  vatClassification?: string | null | undefined;
 };
 
 export type CasEisLineItemInput = {
@@ -130,8 +133,8 @@ export type CasEisDraftJson = {
     Tin: string | null;
     BranchCode: string;
     RegisteredName: string | null;
-    Address: null;
-    VatClassification: null;
+    Address: string | null;
+    VatClassification: string | null;
   };
   Buyer: {
     Tin: string | null;
@@ -219,10 +222,10 @@ export function buildCasEisDraftJson(
     Currency: currency,
     Seller: {
       Tin: normalizeTinDigits(seller.tin),
-      BranchCode: "00000",
+      BranchCode: (seller.branchCode?.trim() || "00000").padStart(5, "0").slice(0, 5),
       RegisteredName: seller.registeredName?.trim() || null,
-      Address: null,
-      VatClassification: null,
+      Address: seller.address?.trim() || null,
+      VatClassification: seller.vatClassification?.trim() || null,
     },
     Buyer: {
       Tin: normalizeTinDigits(document.counterpartTin),
