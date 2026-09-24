@@ -55,7 +55,9 @@ export function BirEisSystemStatus({
               <h2 className="text-base font-semibold tracking-tight">
                 BIR EIS System Status
               </h2>
-              <p className="text-xs text-sidebar-muted">Real-time monitoring.</p>
+              <p className="text-xs text-sidebar-muted">
+                Demo status indicators (not live BIR connectivity).
+              </p>
             </div>
           </div>
           <ActionButton

@@ -39,6 +39,11 @@ export async function testErpConnectionAction(
     };
   }
 
+  await prisma.erpConnection.update({
+    where: { id: connection.id },
+    data: { connectionVerified: true },
+  });
+
   await writeAuditLog({
     tenantId,
     userId: session.user.id,
@@ -49,6 +54,7 @@ export async function testErpConnectionAction(
       name: connection.name,
       provider: connection.provider,
       result: "sandbox_ok",
+      connectionVerified: true,
     },
   });
 

@@ -11,7 +11,10 @@ import {
   CancellationStatusBadge,
   EisAckStatusBadge,
 } from "@/features/documents/components/document-status-badge";
-import { QueueOutboundButton } from "@/features/documents/components/outbound-document-actions";
+import {
+  QueueOutboundButton,
+  TransmitSandboxButton,
+} from "@/features/documents/components/outbound-document-actions";
 import { OutboundDocumentForm } from "@/features/documents/components/outbound-document-form";
 import { ViewEisJsonButton } from "@/features/documents/components/view-eis-json-button";
 import {
@@ -118,6 +121,9 @@ export default async function OutboundDocumentDetailPage({
                     documentType={document.documentType}
                     variant="onNavy"
                   />
+                ) : null}
+                {document.status === "queued" && canManage ? (
+                  <TransmitSandboxButton documentId={document.id} />
                 ) : null}
               </>
             }

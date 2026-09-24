@@ -29,12 +29,19 @@ model Tenant {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  users             User[]
-  roles             Role[]
-  eisCredential     EisCredential?
-  erpConnections    ErpConnection[]
-  auditLogs         AuditLog[]
-  invoiceDocuments  InvoiceDocument[]
+  users                   User[]
+  roles                   Role[]
+  eisCredential           EisCredential?
+  erpConnections          ErpConnection[]
+  auditLogs               AuditLog[]
+  invoiceDocuments        InvoiceDocument[]
+  taxpayerProfile         TaxpayerProfile?
+  casRegistrations        CasRegistration[]
+  complianceDocuments     ComplianceDocument[]
+  complianceValidationRuns ComplianceValidationRun[]
+  reconciliationChecks    ReconciliationCheck[]
+  certificationProfile    CertificationProfile?
+  complianceActivation    ComplianceActivation?
 
   @@map("tenants")
 }
@@ -57,8 +64,12 @@ model User {
   accounts             Account[]
   sessions             Session[]
   auditLogs            AuditLog[]
-  invoiceDocuments     InvoiceDocument[] @relation("DocumentCreator")
-  cancellationRequests InvoiceDocument[] @relation("CancellationRequester")
+  invoiceDocuments       InvoiceDocument[] @relation("DocumentCreator")
+  cancellationRequests   InvoiceDocument[] @relation("CancellationRequester")
+  casReviews             CasRegistration[] @relation("CasReviewer")
+  complianceDocuments    ComplianceDocument[] @relation("ComplianceDocUploader")
+  certificationRecorded  CertificationProfile[] @relation("CertificationRecorder")
+  activationOverrides    ComplianceActivation[] @relation("ActivationOverrideActor")
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -103,6 +114,14 @@ model InvoiceDocument {
   sourceSystem        String?   @map("source_system")
   /// ERP connection display name when source = erp_sync
   sourceLabel         String?   @map("source_label")
+  /// Stable source ERP document id (for idempotency / reconciliation)
+  sourceErpId         String?   @map("source_erp_id")
+  /// ok | failed | quarantined (compliance validation)
+  validationStatus    String?   @map("validation_status")
+  /// BUSINESS | TECHNICAL (last failure class when applicable)
+  failureClass        String?   @map("failure_class")
+  /// Seller branch snapshot at map time (from taxpayer profile)
+  sellerBranchCode    String?   @map("seller_branch_code")
   /// null | requested | pending | accepted | rejected (separate from EIS transmission status)
   cancellationStatus         String?   @map("cancellation_status")
   cancellationReason         String?   @map("cancellation_reason")
@@ -127,12 +146,16 @@ model InvoiceDocument {
   cancellationRequestedBy User?            @relation("CancellationRequester", fields: [cancellationRequestedById], references: [id], onDelete: SetNull)
   originalDocument        InvoiceDocument? @relation("DocumentAdjustments", fields: [originalDocumentId], references: [id], onDelete: SetNull)
   adjustments             InvoiceDocument[] @relation("DocumentAdjustments")
+  payloadVersions         DocumentPayloadVersion[]
+  transmissionAttempts    TransmissionAttempt[]
 
   @@index([tenantId, direction, createdAt])
   @@index([tenantId, status])
   @@index([tenantId, status, eisAckStatus])
   @@index([tenantId, direction, documentNumber])
   @@index([tenantId, cancellationStatus])
+  @@index([tenantId, sourceErpId])
+  @@index([tenantId, validationStatus])
   @@map("invoice_documents")
 }
 
@@ -143,12 +166,26 @@ model ErpConnection {
   /// sap_b1 | acumatica | erpnext | other
   provider         String
   name             String
+  /// Vendor / product display name (e.g. SAP Business One)
+  vendor           String?
+  /// Software version (e.g. 10.x)
+  version          String?
+  /// cas | cba | pos | invoicing_software | custom_erp | other
+  systemType       String?   @map("system_type")
+  /// rest_api | database | file_import | webhook | other
+  integrationMethod String?  @map("integration_method")
+  /// head_office | branch | multi
+  scope            String?
+  /// test | prod (source system environment)
+  environment      String?   @default("test")
   baseUrl          String?   @map("base_url")
   username         String?
   secretCiphertext String?   @map("secret_ciphertext") @db.Text
   secretLast4      String?   @map("secret_last4")
-  /// Maps ERP source keys → BIR/portal outbound field names.
+  /// Legacy JSON map ERP source keys → portal fields (migrated to FieldMapping rows).
   fieldMap         Json?     @map("field_map")
+  /// Whether connection test/sync has succeeded (readiness gate).
+  connectionVerified Boolean @default(false) @map("connection_verified")
   enabled          Boolean   @default(true)
   lastSyncAt       DateTime? @map("last_sync_at")
   notes            String?   @db.Text
@@ -156,7 +193,8 @@ model ErpConnection {
   updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fieldMappings FieldMapping[]
 
   @@index([tenantId])
   @@map("erp_connections")
@@ -185,16 +223,21 @@ model EisCredential {
   @@map("eis_credentials")
 }
 
-/// Slim ISMS-style audit trail (tenant-scoped).
+/// Slim ISMS-style audit trail (tenant-scoped). Append-only — no update/delete APIs.
 model AuditLog {
-  id         String   @id @default(cuid())
-  tenantId   String   @map("tenant_id")
-  userId     String?  @map("user_id")
-  action     String
-  entityType String   @map("entity_type")
-  entityId   String?  @map("entity_id")
-  metadata   Json?
-  createdAt  DateTime @default(now()) @map("created_at")
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  userId        String?  @map("user_id")
+  action        String
+  entityType    String   @map("entity_type")
+  entityId      String?  @map("entity_id")
+  metadata      Json?
+  previousState Json?    @map("previous_state")
+  newState      Json?    @map("new_state")
+  reason        String?  @db.Text
+  correlationId String?  @map("correlation_id")
+  ipAddress     String?  @map("ip_address")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -202,7 +245,268 @@ model AuditLog {
   @@index([tenantId, createdAt])
   @@index([userId])
   @@index([entityType, entityId])
+  @@index([tenantId, correlationId])
   @@map("audit_logs")
+}
+
+/// Taxpayer compliance profile (documentary / readiness — not BIR-verified).
+model TaxpayerProfile {
+  id               String    @id @default(cuid())
+  tenantId         String    @unique @map("tenant_id")
+  registeredName   String?   @map("registered_name")
+  tin              String?
+  branchCode       String?   @map("branch_code")
+  /// head_office | branch
+  officeType       String?   @map("office_type")
+  rdoCode          String?   @map("rdo_code")
+  /// large_taxpayer | regular | other
+  classification   String?
+  /// vat | non_vat
+  vatMode          String?   @map("vat_mode")
+  businessAddress  String?   @map("business_address") @db.Text
+  contactName      String?   @map("contact_name")
+  contactEmail     String?   @map("contact_email")
+  contactPhone     String?   @map("contact_phone")
+  /// NOT_PROVIDED | PENDING_REVIEW | DOCUMENTATION_PROVIDED | REVIEWED
+  profileStatus    String    @default("NOT_PROVIDED") @map("profile_status")
+  notes            String?   @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("taxpayer_profiles")
+}
+
+/// CAS registration documentary evidence (not BIR-verified by this app).
+model CasRegistration {
+  id                   String    @id @default(cuid())
+  tenantId             String    @map("tenant_id")
+  ackCertificateRef    String?   @map("ack_certificate_ref")
+  issuedAt             DateTime? @map("issued_at") @db.Date
+  registeredSystem     String?   @map("registered_system")
+  systemVersion        String?   @map("system_version")
+  rdoOffice            String?   @map("rdo_office")
+  /// head_office | branch | both
+  applicability        String?
+  /// MISSING | PROVIDED | UNDER_REVIEW | REVIEWED | REJECTED
+  status               String    @default("MISSING")
+  reviewerId           String?   @map("reviewer_id")
+  reviewedAt           DateTime? @map("reviewed_at")
+  notes                String?   @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reviewer User?  @relation("CasReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("cas_registrations")
+}
+
+/// Supporting documents stored in DB (ephemeral filesystem unsafe on deploy).
+model ComplianceDocument {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  /// cas_registration | taxpayer_profile | certification | other
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  fileName    String   @map("file_name")
+  mimeType    String   @map("mime_type")
+  /// Base64-encoded content (MVP; keep files small)
+  contentBase64 String @map("content_base64") @db.Text
+  byteSize    Int      @map("byte_size")
+  uploadedById String? @map("uploaded_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploadedBy User?  @relation("ComplianceDocUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, entityType, entityId])
+  @@map("compliance_documents")
+}
+
+/// Explicit ERP → canonical → EIS field mapping (per connection).
+model FieldMapping {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  connectionId    String   @map("connection_id")
+  erpField        String   @map("erp_field")
+  canonicalField  String   @map("canonical_field")
+  eisField        String?  @map("eis_field")
+  required        Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  connection ErpConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, erpField])
+  @@unique([connectionId, canonicalField])
+  @@index([tenantId])
+  @@index([connectionId])
+  @@map("field_mappings")
+}
+
+/// One compliance validation execution (onboarding / invoice / batch / pre_transmit / readiness).
+model ComplianceValidationRun {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  /// onboarding | invoice | batch | pre_transmit | readiness
+  scope       String
+  entityType  String?  @map("entity_type")
+  entityId    String?  @map("entity_id")
+  ruleVersion String   @map("rule_version")
+  overallOutcome String @map("overall_outcome")
+  blockingFailureCount Int @default(0) @map("blocking_failure_count")
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  results ComplianceValidationResult[]
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, scope])
+  @@map("compliance_validation_runs")
+}
+
+model ComplianceValidationResult {
+  id                   String  @id @default(cuid())
+  runId                String  @map("run_id")
+  ruleCode             String  @map("rule_code")
+  category             String
+  /// PASS | FAIL | WARNING | NOT_APPLICABLE
+  outcome              String
+  message              String  @db.Text
+  expected             String? @db.Text
+  actual               String? @db.Text
+  severity             String
+  blocking             Boolean @default(false)
+  source               String?
+  regulatoryReference  String? @map("regulatory_reference")
+
+  run ComplianceValidationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([ruleCode])
+  @@map("compliance_validation_results")
+}
+
+/// Immutable payload snapshots for an invoice lifecycle.
+model DocumentPayloadVersion {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  invoiceDocumentId  String   @map("invoice_document_id")
+  /// ORIGINAL_ERP | CANONICAL | EIS_DRAFT | EIS_SIGNED | BIR_RESPONSE | VALIDATION_RESULT
+  kind               String
+  payload            Json
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  invoiceDocument InvoiceDocument @relation(fields: [invoiceDocumentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, invoiceDocumentId, createdAt])
+  @@index([invoiceDocumentId, kind])
+  @@map("document_payload_versions")
+}
+
+/// Per-attempt EIS transmission ledger (idempotent retries).
+model TransmissionAttempt {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  invoiceDocumentId String    @map("invoice_document_id")
+  attemptNo         Int       @map("attempt_no")
+  idempotencyKey    String    @map("idempotency_key")
+  /// BUSINESS | TECHNICAL | null
+  failureClass      String?   @map("failure_class")
+  httpStatus        Int?      @map("http_status")
+  /// queued | transmitting | acknowledged | accepted | rejected | retry_pending | technical_failure
+  status            String
+  requestMeta       Json?     @map("request_meta")
+  responseMeta      Json?     @map("response_meta")
+  nextRetryAt       DateTime? @map("next_retry_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  invoiceDocument InvoiceDocument @relation(fields: [invoiceDocumentId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, idempotencyKey, attemptNo])
+  @@index([tenantId, invoiceDocumentId])
+  @@index([tenantId, status])
+  @@map("transmission_attempts")
+}
+
+model ReconciliationCheck {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  findingCount     Int      @default(0) @map("finding_count")
+  createdById      String?  @map("created_by_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  findings ReconciliationFinding[]
+
+  @@index([tenantId, createdAt])
+  @@map("reconciliation_checks")
+}
+
+model ReconciliationFinding {
+  id          String  @id @default(cuid())
+  checkId     String  @map("check_id")
+  /// MISSING_IN_MW | NEVER_TRANSMITTED | NO_ACK | UNRESOLVED_REJECT | DUPLICATE_SOURCE | AMOUNT_MISMATCH | STATUS_MISMATCH | STALE_PENDING
+  code        String
+  severity    String
+  message     String  @db.Text
+  entityType  String? @map("entity_type")
+  entityId    String? @map("entity_id")
+  metadata    Json?
+
+  check ReconciliationCheck @relation(fields: [checkId], references: [id], onDelete: Cascade)
+
+  @@index([checkId])
+  @@index([code])
+  @@map("reconciliation_findings")
+}
+
+/// Recorded EIS certification / PTT evidence — not BIR-verified by this app.
+model CertificationProfile {
+  id            String    @id @default(cuid())
+  tenantId      String    @unique @map("tenant_id")
+  pttNumber     String?   @map("ptt_number")
+  /// NOT_RECORDED | RECORDED | UNDER_REVIEW | REVIEWED
+  status        String    @default("NOT_RECORDED")
+  certPortalNote String?  @map("cert_portal_note") @db.Text
+  notes         String?   @db.Text
+  recordedById  String?   @map("recorded_by_id")
+  recordedAt    DateTime? @map("recorded_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  recordedBy User?  @relation("CertificationRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  @@map("certification_profiles")
+}
+
+/// Server-enforced production activation gate state machine.
+model ComplianceActivation {
+  id                   String    @id @default(cuid())
+  tenantId             String    @unique @map("tenant_id")
+  /// DRAFT | TAXPAYER_PROFILE_COMPLETE | … | PRODUCTION_ENABLED
+  gateState            String    @default("DRAFT") @map("gate_state")
+  productionEnabled    Boolean   @default(false) @map("production_enabled")
+  productionEnabledAt  DateTime? @map("production_enabled_at")
+  testTransmissionPassed Boolean @default(false) @map("test_transmission_passed")
+  reconciliationPassed Boolean   @default(false) @map("reconciliation_passed")
+  lastOverrideReason   String?   @map("last_override_reason") @db.Text
+  lastOverrideAt       DateTime? @map("last_override_at")
+  lastOverrideById     String?   @map("last_override_by_id")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  tenant         Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lastOverrideBy User?  @relation("ActivationOverrideActor", fields: [lastOverrideById], references: [id], onDelete: SetNull)
+
+  @@map("compliance_activations")
 }
 
 model Role {

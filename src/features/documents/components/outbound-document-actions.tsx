@@ -4,7 +4,10 @@ import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { DocumentActionState } from "@/features/documents/actions/create-outbound-document.action";
-import { queueOutboundDocumentAction } from "@/features/documents/actions/queue-outbound-document.action";
+import {
+  queueOutboundDocumentAction,
+  transmitOutboundDocumentAction,
+} from "@/features/documents/actions/queue-outbound-document.action";
 import { formatDocumentType } from "@/features/documents/lib/document-format";
 import { ActionButton } from "@/components/ui/action-button";
 import { Button } from "@/components/ui/button";
@@ -81,16 +84,17 @@ export function QueueOutboundButton({
           ) : null}
           <DialogTrigger asChild>
             <Button type="button" variant={variant}>
-              Submit to EIS
+              Queue for EIS
             </Button>
           </DialogTrigger>
         </div>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Submit to EIS?</DialogTitle>
+            <DialogTitle>Queue for EIS transmission?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to submit this {typeLabel} to EIS? This will
-              mark the document as ready for transmission.
+              This runs pre-transmission compliance checks and marks the{" "}
+              {typeLabel} as queued. It does not by itself mean BIR accepted the
+              document.
             </DialogDescription>
           </DialogHeader>
           {state.error ? (
@@ -109,9 +113,9 @@ export function QueueOutboundButton({
               <ActionButton
                 type="submit"
                 loading={pending}
-                loadingText="Submitting…"
+                loadingText="Queuing…"
               >
-                Submit to EIS
+                Queue for EIS
               </ActionButton>
             </form>
           </DialogFooter>
@@ -121,10 +125,10 @@ export function QueueOutboundButton({
       <Dialog open={successOpen} onOpenChange={handleSuccessOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Submitted to EIS</DialogTitle>
+            <DialogTitle>Queued for EIS</DialogTitle>
             <DialogDescription>
               {state.message ??
-                "This document is now pending transmission to BIR EIS."}
+                "This document is queued. Use Transmit (sandbox) to send a test submission."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -135,5 +139,48 @@ export function QueueOutboundButton({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+export function TransmitSandboxButton({
+  documentId,
+  className,
+}: {
+  documentId: string;
+  className?: string;
+}) {
+  const router = useRouter();
+  const [state, formAction, pending] = useActionState(
+    transmitOutboundDocumentAction,
+    {} as DocumentActionState,
+  );
+
+  return (
+    <form action={formAction} className={cn("flex flex-col gap-1", className)}>
+      <input type="hidden" name="id" value={documentId} />
+      <ActionButton type="submit" loading={pending} loadingText="Transmitting…">
+        Transmit (sandbox)
+      </ActionButton>
+      {state.error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {state.error}
+        </p>
+      ) : null}
+      {state.success ? (
+        <p className="text-sm text-emerald-700" role="status">
+          {state.message}
+        </p>
+      ) : null}
+      {state.success || state.error ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => router.refresh()}
+        >
+          Refresh
+        </Button>
+      ) : null}
+    </form>
   );
 }

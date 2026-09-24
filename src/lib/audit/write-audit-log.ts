@@ -8,6 +8,11 @@ export interface WriteAuditLogInput {
   entityType: string;
   entityId?: string | null;
   metadata?: Prisma.InputJsonValue;
+  previousState?: Prisma.InputJsonValue;
+  newState?: Prisma.InputJsonValue;
+  reason?: string | null;
+  correlationId?: string | null;
+  ipAddress?: string | null;
 }
 
 /** Persist a tenant-scoped audit event. Never pass secret plaintext in metadata. */
@@ -20,6 +25,11 @@ export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
       entityType: input.entityType,
       entityId: input.entityId ?? null,
       metadata: input.metadata ?? undefined,
+      previousState: input.previousState ?? undefined,
+      newState: input.newState ?? undefined,
+      reason: input.reason ?? null,
+      correlationId: input.correlationId ?? null,
+      ipAddress: input.ipAddress ?? null,
     },
   });
 }
