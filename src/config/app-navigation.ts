@@ -34,12 +34,13 @@ export const appNavigation: NavLinkItem[] = [
     icon: FileInput,
     permission: "documents.view",
   },
-  {
-    href: "/compliance",
-    label: "Compliance",
-    icon: ShieldCheck,
-    permission: "compliance.view",
-  },
+  // DO NOT UNCOMMENT 
+  // {
+  //   href: "/compliance",
+  //   label: "Compliance",
+  //   icon: ShieldCheck,
+  //   permission: "compliance.view",
+  // },
   {
     href: "/audit-log",
     label: "Audit Logs",

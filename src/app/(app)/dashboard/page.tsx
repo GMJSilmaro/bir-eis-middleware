@@ -72,7 +72,7 @@ function buildTopCustomers(
   });
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage() { 
   const session = await requireAuth();
   const tenantId = session.user.tenantId;
 
