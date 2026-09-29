@@ -1,5 +1,6 @@
 import {
   Building2,
+  ClipboardList,
   KeyRound,
   Lock,
   Network,
@@ -49,6 +50,12 @@ export const settingsNavigation: SettingsNavGroup[] = [
         title: "Organization",
         description: "Name and branding",
         icon: Building2,
+      },
+      {
+        href: "/settings/bir-eis-setup",
+        title: "BIR EIS Setup",
+        description: "Guided integration setup wizard",
+        icon: ClipboardList,
       },
     ],
   },

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { invalidateDownstreamReadiness } from "@/features/bir-setup/lib/invalidate-downstream";
 import { upsertEisCredentialsSchema } from "@/features/settings/schemas/settings.schema";
 import { writeAuditLog } from "@/lib/audit/write-audit-log";
 import { requirePermission } from "@/lib/auth/permissions";
@@ -105,8 +106,18 @@ export async function upsertEisCredentialsAction(
       },
     });
 
+    await invalidateDownstreamReadiness({
+      tenantId,
+      userId: session.user.id,
+      reason:
+        "EIS credentials changed. Validation and test transmission may need to be re-checked.",
+      clearTestFlags: true,
+    });
+
     revalidatePath("/settings");
     revalidatePath("/settings/eis-credentials");
+    revalidatePath("/settings/bir-eis-setup");
+    revalidatePath("/dashboard");
     revalidatePath("/audit-log");
     return { success: true };
   } catch {

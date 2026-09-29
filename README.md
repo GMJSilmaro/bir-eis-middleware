@@ -2,8 +2,8 @@
 
 Multi-tenant SaaS middleware that maps ERP, manual, and API invoice data to BIR-compliant JSON, signs with JWS, and transmits and tracks submissions to the Bureau of Internal Revenue Electronic Invoicing System (EIS) / eSRS.
 
-**Current version:** `0.11.0`  
-**Status:** Foundation MVP + Compliance Onboarding & EIS Integration Readiness (taxpayer/CAS profiles, field mapping, centralized validation, sandbox transmit ledger, reconciliation, production activation gates), document inbox, ERP/Excel ingest, CAS-shaped draft EIS JSON preview, portal settings, EIS credential vault, audit logs, provider console, organization user management, invoice cancellation (sandbox), and public mandate / help education on the landing page
+**Current version:** `0.12.0`  
+**Status:** Foundation MVP + BIR EIS Setup Wizard (Settings orchestrator + dashboard reminders) + Compliance Onboarding & EIS Integration Readiness (taxpayer/CAS profiles, field mapping, centralized validation, sandbox transmit ledger, reconciliation, production activation gates), document inbox, ERP/Excel ingest, CAS-shaped draft EIS JSON preview, portal settings, EIS credential vault, audit logs, provider console, organization user management, invoice cancellation (sandbox), and public mandate / help education on the landing page
 
 ## Why this exists
 
@@ -94,6 +94,7 @@ src/
 │   ├── auth/            # Auth actions + schemas
 │   ├── documents/       # Outbound/inbound inbox, CSV/ERP ingest, actions, UI
 │   ├── compliance/      # Onboarding, readiness, mapping, validation, reconciliation
+│   ├── bir-setup/       # Settings BIR EIS Setup wizard + dashboard reminders
 │   ├── eis/             # Sandbox EIS adapters (transmit + cancellation)
 │   ├── provider/        # Provider console actions, branding, schemas
 │   ├── settings/        # Org + EIS + ERP connection forms/actions

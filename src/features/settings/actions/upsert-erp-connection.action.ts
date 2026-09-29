@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { invalidateDownstreamReadiness } from "@/features/bir-setup/lib/invalidate-downstream";
 import { DEFAULT_ERP_FIELD_MAP } from "@/features/documents/lib/bir-portal-field-map";
 import { upsertErpConnectionSchema } from "@/features/settings/schemas/erp-connection.schema";
 import { writeAuditLog } from "@/lib/audit/write-audit-log";
@@ -131,8 +132,19 @@ export async function upsertErpConnectionAction(
       },
     });
 
+    if (existing) {
+      await invalidateDownstreamReadiness({
+        tenantId,
+        userId: session.user.id,
+        reason:
+          "ERP connection changed. Data discovery, mapping, validation, test transmission, and reconciliation need to be re-checked.",
+      });
+    }
+
     revalidatePath("/settings");
     revalidatePath("/settings/integrations/erp");
+    revalidatePath("/settings/bir-eis-setup");
+    revalidatePath("/dashboard");
     revalidatePath("/outbound/sync");
     revalidatePath("/audit-log");
 

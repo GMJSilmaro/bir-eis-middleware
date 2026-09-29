@@ -26,6 +26,7 @@ export async function upsertTaxpayerProfileAction(
 
   const parsed = upsertTaxpayerProfileSchema.safeParse({
     registeredName: formData.get("registeredName"),
+    tradeName: formData.get("tradeName"),
     tin: formData.get("tin"),
     branchCode: formData.get("branchCode"),
     officeType: formData.get("officeType"),
@@ -33,6 +34,9 @@ export async function upsertTaxpayerProfileAction(
     classification: formData.get("classification"),
     vatMode: formData.get("vatMode"),
     businessAddress: formData.get("businessAddress"),
+    businessType: formData.get("businessType"),
+    ecommerceEngaged: formData.get("ecommerceEngaged"),
+    usesCas: formData.get("usesCas"),
     contactName: formData.get("contactName"),
     contactEmail: formData.get("contactEmail"),
     contactPhone: formData.get("contactPhone"),
@@ -54,6 +58,7 @@ export async function upsertTaxpayerProfileAction(
     where: { tenantId },
     data: {
       registeredName: data.registeredName,
+      tradeName: data.tradeName || null,
       tin: data.tin,
       branchCode: data.branchCode,
       officeType: data.officeType,
@@ -61,6 +66,9 @@ export async function upsertTaxpayerProfileAction(
       classification: data.classification || null,
       vatMode: data.vatMode,
       businessAddress: data.businessAddress || null,
+      businessType: data.businessType || null,
+      ecommerceEngaged: data.ecommerceEngaged || null,
+      usesCas: data.usesCas || null,
       contactName: data.contactName || null,
       contactEmail: data.contactEmail || null,
       contactPhone: data.contactPhone || null,
@@ -83,6 +91,8 @@ export async function upsertTaxpayerProfileAction(
   revalidatePath("/compliance");
   revalidatePath("/compliance/taxpayer");
   revalidatePath("/compliance/readiness");
+  revalidatePath("/settings/bir-eis-setup");
+  revalidatePath("/dashboard");
   return {
     success:
       "Taxpayer profile saved. Status reflects internal review only — not BIR verification.",

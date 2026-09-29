@@ -42,6 +42,7 @@ model Tenant {
   reconciliationChecks    ReconciliationCheck[]
   certificationProfile    CertificationProfile?
   complianceActivation    ComplianceActivation?
+  eisSetupState           EisSetupState?
 
   @@map("tenants")
 }
@@ -254,6 +255,8 @@ model TaxpayerProfile {
   id               String    @id @default(cuid())
   tenantId         String    @unique @map("tenant_id")
   registeredName   String?   @map("registered_name")
+  /// Optional trade / DBA name (distinct from workspace branding).
+  tradeName        String?   @map("trade_name")
   tin              String?
   branchCode       String?   @map("branch_code")
   /// head_office | branch
@@ -261,9 +264,15 @@ model TaxpayerProfile {
   rdoCode          String?   @map("rdo_code")
   /// large_taxpayer | regular | other
   classification   String?
-  /// vat | non_vat
+  /// vat | non_vat | other
   vatMode          String?   @map("vat_mode")
   businessAddress  String?   @map("business_address") @db.Text
+  /// Optional business type label (documentary).
+  businessType     String?   @map("business_type")
+  /// YES | NO — engaged in e-commerce / internet transactions
+  ecommerceEngaged String?   @map("ecommerce_engaged")
+  /// YES | NO — uses computerized accounting / invoicing
+  usesCas          String?   @map("uses_cas")
   contactName      String?   @map("contact_name")
   contactEmail     String?   @map("contact_email")
   contactPhone     String?   @map("contact_phone")
@@ -277,6 +286,34 @@ model TaxpayerProfile {
 
   @@index([tenantId])
   @@map("taxpayer_profiles")
+}
+
+/// Wizard orchestration / UX state only — domain SoT remains compliance + settings modules.
+model EisSetupState {
+  id                       String    @id @default(cuid())
+  tenantId                 String    @unique @map("tenant_id")
+  /// Current wizard step key (organization | taxpayer | … | production)
+  currentStepKey           String    @default("organization") @map("current_step_key")
+  wizardStartedAt          DateTime? @map("wizard_started_at")
+  /// Server-side “Remind me later” for dashboard modal (session dismiss is client-only).
+  reminderDismissedAt      DateTime? @map("reminder_dismissed_at")
+  /// One-time dashboard success acknowledgement after production-ready.
+  completionAcknowledgedAt DateTime? @map("completion_acknowledged_at")
+  /// Upstream change invalidated downstream readiness checks.
+  requiresRevalidation     Boolean   @default(false) @map("requires_revalidation")
+  revalidationReason       String?   @map("revalidation_reason") @db.Text
+  /// Last data-discovery scan (field FOUND/PARTIAL/NOT_FOUND) — never transmit samples.
+  discoveryResult          Json?     @map("discovery_result")
+  discoveryAt              DateTime? @map("discovery_at")
+  /// Last data-quality assessment summary.
+  qualityScanResult        Json?     @map("quality_scan_result")
+  qualityScanAt            DateTime? @map("quality_scan_at")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("eis_setup_states")
 }
 
 /// CAS registration documentary evidence (not BIR-verified by this app).

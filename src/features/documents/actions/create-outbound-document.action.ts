@@ -126,6 +126,9 @@ export async function createOutboundDocumentAction(
       {
         tin: taxpayer?.tin ?? seller.tin,
         registeredName: taxpayer?.registeredName ?? seller.registeredName,
+        branchCode: taxpayer?.branchCode ?? seller.branchCode,
+        address: taxpayer?.businessAddress ?? seller.address,
+        vatClassification: seller.vatClassification,
       },
     );
 

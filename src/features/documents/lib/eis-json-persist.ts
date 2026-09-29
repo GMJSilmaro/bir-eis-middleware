@@ -8,11 +8,11 @@ import {
 import type { Prisma } from "@/lib/database/generated/prisma/client";
 import { prisma } from "@/lib/database/client";
 
-/** Prefetch seller TIN + tenant registered name for EIS draft mapping. */
+/** Prefetch seller TIN + registered name from taxpayer profile (fallback: credential + tenant). */
 export async function loadEisSellerForTenant(
   tenantId: string,
 ): Promise<CasEisSellerInput> {
-  const [tenant, credential] = await Promise.all([
+  const [tenant, credential, taxpayer] = await Promise.all([
     prisma.tenant.findFirst({
       where: { id: tenantId, deletedAt: null },
       select: { name: true },
@@ -21,11 +21,29 @@ export async function loadEisSellerForTenant(
       where: { tenantId, deletedAt: null },
       select: { tin: true },
     }),
+    prisma.taxpayerProfile.findUnique({
+      where: { tenantId },
+      select: {
+        registeredName: true,
+        tin: true,
+        branchCode: true,
+        businessAddress: true,
+        vatMode: true,
+      },
+    }),
   ]);
 
   return {
-    tin: credential?.tin ?? null,
-    registeredName: tenant?.name ?? null,
+    tin: taxpayer?.tin ?? credential?.tin ?? null,
+    registeredName: taxpayer?.registeredName ?? tenant?.name ?? null,
+    branchCode: taxpayer?.branchCode ?? "00000",
+    address: taxpayer?.businessAddress ?? null,
+    vatClassification:
+      taxpayer?.vatMode === "vat"
+        ? "VAT"
+        : taxpayer?.vatMode === "non_vat"
+          ? "NON_VAT"
+          : taxpayer?.vatMode ?? null,
   };
 }
 
@@ -35,11 +53,13 @@ export function buildEisJsonPersistFields(
 ): {
   eisJsonPayload: Prisma.InputJsonValue;
   eisJsonMappedAt: Date;
+  sellerBranchCode?: string | null;
 } {
   const payload = buildCasEisDraftJson(document, seller);
   return {
     eisJsonPayload: payload as unknown as Prisma.InputJsonValue,
     eisJsonMappedAt: new Date(),
+    sellerBranchCode: payload.Seller.BranchCode,
   };
 }
 

@@ -16,6 +16,7 @@ type TaxpayerFormProps = {
   canEdit: boolean;
   initial: {
     registeredName: string;
+    tradeName?: string;
     tin: string;
     branchCode: string;
     officeType: string;
@@ -23,6 +24,9 @@ type TaxpayerFormProps = {
     classification: string;
     vatMode: string;
     businessAddress: string;
+    businessType?: string;
+    ecommerceEngaged?: string;
+    usesCas?: string;
     contactName: string;
     contactEmail: string;
     contactPhone: string;
@@ -51,6 +55,7 @@ export function TaxpayerProfileForm({ canEdit, initial }: TaxpayerFormProps) {
       ) : null}
 
       <Field label="Registered name" name="registeredName" defaultValue={initial.registeredName} disabled={!canEdit} required />
+      <Field label="Trade name (optional)" name="tradeName" defaultValue={initial.tradeName ?? ""} disabled={!canEdit} />
       <Field label="TIN" name="tin" defaultValue={initial.tin} disabled={!canEdit} required />
       <Field label="Branch code" name="branchCode" defaultValue={initial.branchCode} disabled={!canEdit} required />
       <div className="space-y-1.5">
@@ -83,7 +88,7 @@ export function TaxpayerProfileForm({ canEdit, initial }: TaxpayerFormProps) {
         </select>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="vatMode">VAT / Non-VAT</Label>
+        <Label htmlFor="vatMode">VAT status</Label>
         <select
           id="vatMode"
           name="vatMode"
@@ -91,12 +96,42 @@ export function TaxpayerProfileForm({ canEdit, initial }: TaxpayerFormProps) {
           disabled={!canEdit}
           className={settingsFieldClassName}
         >
-          <option value="vat">VAT</option>
+          <option value="vat">VAT registered</option>
           <option value="non_vat">Non-VAT</option>
+          <option value="other">Other / unknown</option>
+        </select>
+      </div>
+      <Field label="Business type" name="businessType" defaultValue={initial.businessType ?? ""} disabled={!canEdit} />
+      <div className="space-y-1.5">
+        <Label htmlFor="ecommerceEngaged">Engaged in e-commerce / internet transactions?</Label>
+        <select
+          id="ecommerceEngaged"
+          name="ecommerceEngaged"
+          defaultValue={initial.ecommerceEngaged ?? ""}
+          disabled={!canEdit}
+          className={settingsFieldClassName}
+        >
+          <option value="">—</option>
+          <option value="YES">Yes</option>
+          <option value="NO">No</option>
+        </select>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="usesCas">Uses computerized accounting / invoicing?</Label>
+        <select
+          id="usesCas"
+          name="usesCas"
+          defaultValue={initial.usesCas ?? ""}
+          disabled={!canEdit}
+          className={settingsFieldClassName}
+        >
+          <option value="">—</option>
+          <option value="YES">Yes</option>
+          <option value="NO">No</option>
         </select>
       </div>
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="businessAddress">Business address</Label>
+        <Label htmlFor="businessAddress">Registered business address</Label>
         <textarea
           id="businessAddress"
           name="businessAddress"

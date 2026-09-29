@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { assertProductionAllowed } from "@/features/bir-setup/lib/assert-production-allowed";
 import {
   appendPayloadVersion,
   buildInvoiceContextFromDoc,
@@ -89,10 +90,14 @@ export async function queueOutboundDocumentAction(
       environment,
     })
   ) {
+    const gate = await assertProductionAllowed(tenantId);
     logPerfTotal("queueOutboundDocument", perfStart);
     return {
-      error:
-        "Production transmission is blocked until EIS Integration Readiness gates pass (or an audited override is recorded).",
+      error: [
+        gate.message,
+        ...gate.blockingIssues.slice(0, 5).map((issue) => `• ${issue}`),
+        "Review requirements in Settings → BIR EIS Setup.",
+      ].join(" "),
     };
   }
 
@@ -243,9 +248,13 @@ export async function transmitOutboundDocumentAction(
       environment,
     })
   ) {
+    const gate = await assertProductionAllowed(tenantId);
     return {
-      error:
-        "Production transmission blocked — complete EIS Integration Readiness or use certification (sandbox) environment.",
+      error: [
+        gate.message,
+        ...gate.blockingIssues.slice(0, 5).map((issue) => `• ${issue}`),
+        "Review requirements in Settings → BIR EIS Setup.",
+      ].join(" "),
     };
   }
 

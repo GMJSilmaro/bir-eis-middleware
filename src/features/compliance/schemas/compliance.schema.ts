@@ -8,6 +8,7 @@ import {
 
 export const upsertTaxpayerProfileSchema = z.object({
   registeredName: z.string().trim().min(1, "Registered name is required").max(200),
+  tradeName: z.string().trim().max(200).optional().or(z.literal("")),
   tin: z.string().trim().min(9, "Enter a valid TIN").max(32),
   branchCode: z.string().trim().min(1, "Branch code is required").max(16),
   officeType: z.enum(["head_office", "branch"]),
@@ -16,8 +17,11 @@ export const upsertTaxpayerProfileSchema = z.object({
     .enum(["large_taxpayer", "regular", "other"])
     .optional()
     .or(z.literal("")),
-  vatMode: z.enum(["vat", "non_vat"]),
+  vatMode: z.enum(["vat", "non_vat", "other"]),
   businessAddress: z.string().trim().max(500).optional().or(z.literal("")),
+  businessType: z.string().trim().max(120).optional().or(z.literal("")),
+  ecommerceEngaged: z.enum(["YES", "NO"]).optional().or(z.literal("")),
+  usesCas: z.enum(["YES", "NO"]).optional().or(z.literal("")),
   contactName: z.string().trim().max(120).optional().or(z.literal("")),
   contactEmail: z.string().trim().max(200).optional().or(z.literal("")),
   contactPhone: z.string().trim().max(40).optional().or(z.literal("")),
